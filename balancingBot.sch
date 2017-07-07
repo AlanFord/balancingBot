@@ -1,0 +1,942 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:balancingBot
+LIBS:switches
+LIBS:balancingBot-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L DRV8825 U2
+U 1 1 5955942F
+P 2775 6485
+F 0 "U2" H 2765 6035 60  0000 C CNN
+F 1 "DRV8825" H 2775 6895 60  0000 C CNN
+F 2 "balancingBot:DRV8825" H 2775 6485 60  0001 C CNN
+F 3 "" H 2775 6485 60  0001 C CNN
+	1    2775 6485
+	1    0    0    -1  
+$EndComp
+$Comp
+L GY-521 U5
+U 1 1 59559464
+P 7900 4555
+F 0 "U5" H 7910 4065 60  0000 C CNN
+F 1 "GY-521" H 7890 5105 60  0000 C CNN
+F 2 "balancingBot:GY-521" H 7900 4555 60  0001 C CNN
+F 3 "" H 7900 4555 60  0001 C CNN
+	1    7900 4555
+	-1   0    0    -1  
+$EndComp
+$Comp
+L WRL-00691 U3
+U 1 1 5955949C
+P 3610 3420
+F 0 "U3" H 3630 2780 60  0000 C CNN
+F 1 "WRL-00691" H 3610 3965 60  0000 C CNN
+F 2 "balancingBot:WRL-00691" H 3610 3420 60  0001 C CNN
+F 3 "" H 3610 3420 60  0001 C CNN
+	1    3610 3420
+	1    0    0    -1  
+$EndComp
+$Comp
+L DRV8825 U1
+U 1 1 59559506
+P 2740 4825
+F 0 "U1" H 2730 4375 60  0000 C CNN
+F 1 "DRV8825" H 2740 5235 60  0000 C CNN
+F 2 "balancingBot:DRV8825" H 2740 4825 60  0001 C CNN
+F 3 "" H 2740 4825 60  0001 C CNN
+	1    2740 4825
+	1    0    0    -1  
+$EndComp
+$Comp
+L ArduinoProMini U4
+U 1 1 595593C1
+P 5745 3340
+F 0 "U4" H 5705 3150 60  0000 C CNN
+F 1 "ArduinoProMini" H 5785 4230 60  0000 C CNN
+F 2 "balancingBot:Arduino_Pro_Mini" H 5685 3350 60  0001 C CNN
+F 3 "" H 5685 3350 60  0001 C CNN
+	1    5745 3340
+	1    0    0    -1  
+$EndComp
+NoConn ~ 5815 4160
+NoConn ~ 5925 4160
+NoConn ~ 6415 3380
+NoConn ~ 6415 3290
+NoConn ~ 6415 3190
+NoConn ~ 6415 3730
+NoConn ~ 6415 3630
+$Comp
+L GND #PWR01
+U 1 1 59559CE8
+P 8420 4800
+F 0 "#PWR01" H 8420 4550 50  0001 C CNN
+F 1 "GND" H 8420 4650 50  0000 C CNN
+F 2 "" H 8420 4800 50  0000 C CNN
+F 3 "" H 8420 4800 50  0000 C CNN
+	1    8420 4800
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR02
+U 1 1 59559D4A
+P 8420 4340
+F 0 "#PWR02" H 8420 4190 50  0001 C CNN
+F 1 "+5V" H 8420 4480 50  0000 C CNN
+F 2 "" H 8420 4340 50  0000 C CNN
+F 3 "" H 8420 4340 50  0000 C CNN
+	1    8420 4340
+	1    0    0    -1  
+$EndComp
+NoConn ~ 7470 4495
+NoConn ~ 7470 4615
+NoConn ~ 7470 4755
+NoConn ~ 7470 4905
+Text GLabel 8360 1225 0    60   Input ~ 0
+11.1V
+$Comp
+L GND #PWR03
+U 1 1 5955A15B
+P 7910 2125
+F 0 "#PWR03" H 7910 1875 50  0001 C CNN
+F 1 "GND" H 7910 1975 50  0000 C CNN
+F 2 "" H 7910 2125 50  0000 C CNN
+F 3 "" H 7910 2125 50  0000 C CNN
+	1    7910 2125
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR04
+U 1 1 5955A1EF
+P 9575 1855
+F 0 "#PWR04" H 9575 1705 50  0001 C CNN
+F 1 "+5V" H 9575 1995 50  0000 C CNN
+F 2 "" H 9575 1855 50  0000 C CNN
+F 3 "" H 9575 1855 50  0000 C CNN
+	1    9575 1855
+	1    0    0    -1  
+$EndComp
+$Comp
+L D24V10F5 U6
+U 1 1 5955A3EE
+P 8880 1715
+F 0 "U6" H 8890 1255 60  0000 C CNN
+F 1 "D24V10F5" H 8900 2165 60  0000 C CNN
+F 2 "balancingBot:D24V10F5" H 8880 1715 60  0001 C CNN
+F 3 "" H 8880 1715 60  0001 C CNN
+	1    8880 1715
+	1    0    0    -1  
+$EndComp
+NoConn ~ 9330 1605
+$Comp
+L +5V #PWR05
+U 1 1 5955A687
+P 3020 3035
+F 0 "#PWR05" H 3020 2885 50  0001 C CNN
+F 1 "+5V" H 3020 3175 50  0000 C CNN
+F 2 "" H 3020 3035 50  0000 C CNN
+F 3 "" H 3020 3035 50  0000 C CNN
+	1    3020 3035
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR06
+U 1 1 5955A6E0
+P 3030 3315
+F 0 "#PWR06" H 3030 3065 50  0001 C CNN
+F 1 "GND" H 3030 3165 50  0000 C CNN
+F 2 "" H 3030 3315 50  0000 C CNN
+F 3 "" H 3030 3315 50  0000 C CNN
+	1    3030 3315
+	1    0    0    -1  
+$EndComp
+Text Notes 2475 4330 0    60   ~ 0
+Right Stepper
+Text Notes 2500 5990 0    60   ~ 0
+Left Stepper
+Text Notes 7730 3930 0    60   ~ 0
+I2C Gyro
+Text Notes 3155 2785 0    60   ~ 0
+SPI 2.5 GHz Wireless
+Text Notes 8765 1200 0    60   ~ 0
+5V 1A
+$Comp
+L +5V #PWR07
+U 1 1 5955B40F
+P 4485 2950
+F 0 "#PWR07" H 4485 2800 50  0001 C CNN
+F 1 "+5V" H 4485 3090 50  0000 C CNN
+F 2 "" H 4485 2950 50  0000 C CNN
+F 3 "" H 4485 2950 50  0000 C CNN
+	1    4485 2950
+	1    0    0    -1  
+$EndComp
+Text GLabel 3395 4410 2    60   Input ~ 0
+11.1V
+$Comp
+L GND #PWR08
+U 1 1 5955B554
+P 3810 4440
+F 0 "#PWR08" H 3810 4190 50  0001 C CNN
+F 1 "GND" H 3810 4290 50  0000 C CNN
+F 2 "" H 3810 4440 50  0000 C CNN
+F 3 "" H 3810 4440 50  0000 C CNN
+	1    3810 4440
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR09
+U 1 1 5955B696
+P 3200 5220
+F 0 "#PWR09" H 3200 4970 50  0001 C CNN
+F 1 "GND" H 3200 5070 50  0000 C CNN
+F 2 "" H 3200 5220 50  0000 C CNN
+F 3 "" H 3200 5220 50  0000 C CNN
+	1    3200 5220
+	1    0    0    -1  
+$EndComp
+Text GLabel 3430 6070 2    60   Input ~ 0
+11.1V
+$Comp
+L GND #PWR010
+U 1 1 5955B883
+P 3845 6100
+F 0 "#PWR010" H 3845 5850 50  0001 C CNN
+F 1 "GND" H 3845 5950 50  0000 C CNN
+F 2 "" H 3845 6100 50  0000 C CNN
+F 3 "" H 3845 6100 50  0000 C CNN
+	1    3845 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR011
+U 1 1 5955BA2D
+P 3235 6880
+F 0 "#PWR011" H 3235 6630 50  0001 C CNN
+F 1 "GND" H 3235 6730 50  0000 C CNN
+F 2 "" H 3235 6880 50  0000 C CNN
+F 3 "" H 3235 6880 50  0000 C CNN
+	1    3235 6880
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR012
+U 1 1 5955C3CB
+P 1525 6225
+F 0 "#PWR012" H 1525 6075 50  0001 C CNN
+F 1 "+5V" H 1525 6365 50  0000 C CNN
+F 2 "" H 1525 6225 50  0000 C CNN
+F 3 "" H 1525 6225 50  0000 C CNN
+	1    1525 6225
+	1    0    0    -1  
+$EndComp
+Text Notes 1570 7630 0    60   ~ 0
+M0/M1/M2:\n0 0 0 - Full Step\n1 0 0 - 1/2 Step\n0 1 0 - 1/4 Step\n1 1 0 - 1/8 Step\n0 0 1 - 1/16 Step\nInternal pull down\n
+$Comp
+L R_Small R15
+U 1 1 5955CF79
+P 4330 3040
+F 0 "R15" H 4360 3060 50  0000 L CNN
+F 1 "0R" H 4360 3000 50  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 4330 3040 50  0001 C CNN
+F 3 "" H 4330 3040 50  0000 C CNN
+F 4 "Value" H 4330 3040 60  0001 C CNN "Fieldname"
+	1    4330 3040
+	0    -1   -1   0   
+$EndComp
+Text Notes 3815 4035 0    60   ~ 0
+IRQ line might not be used
+$Comp
+L R_Small R7
+U 1 1 59567AB5
+P 2120 6255
+F 0 "R7" V 2075 6335 50  0000 L CNN
+F 1 "NOPOP" V 2115 6190 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 2120 6255 50  0001 C CNN
+F 3 "" H 2120 6255 50  0000 C CNN
+F 4 "Value" H 2120 6255 60  0001 C CNN "Fieldname"
+	1    2120 6255
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R_Small R8
+U 1 1 59567D52
+P 2120 6335
+F 0 "R8" V 2080 6415 50  0000 L CNN
+F 1 "NOPOP" V 2115 6270 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 2120 6335 50  0001 C CNN
+F 3 "" H 2120 6335 50  0000 C CNN
+F 4 "Value" H 2120 6335 60  0001 C CNN "Fieldname"
+	1    2120 6335
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R_Small R9
+U 1 1 59567D8D
+P 2120 6405
+F 0 "R9" V 2080 6490 50  0000 L CNN
+F 1 "0R" V 2115 6380 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 2120 6405 50  0001 C CNN
+F 3 "" H 2120 6405 50  0000 C CNN
+F 4 "Value" H 2120 6405 60  0001 C CNN "Fieldname"
+	1    2120 6405
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R_Small R10
+U 1 1 59567DC9
+P 2120 6475
+F 0 "R10" V 2080 6560 50  0000 L CNN
+F 1 "NOPOP" V 2120 6410 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 2120 6475 50  0001 C CNN
+F 3 "" H 2120 6475 50  0000 C CNN
+F 4 "Value" H 2120 6475 60  0001 C CNN "Fieldname"
+	1    2120 6475
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R_Small R11
+U 1 1 59568D91
+P 2120 6555
+F 0 "R11" V 2080 6640 50  0000 L CNN
+F 1 "0R" V 2115 6530 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 2120 6555 50  0001 C CNN
+F 3 "" H 2120 6555 50  0000 C CNN
+F 4 "Value" H 2120 6555 60  0001 C CNN "Fieldname"
+	1    2120 6555
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R_Small R12
+U 1 1 59568E06
+P 2120 6635
+F 0 "R12" V 2080 6720 50  0000 L CNN
+F 1 "0R" V 2115 6610 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 2120 6635 50  0001 C CNN
+F 3 "" H 2120 6635 50  0000 C CNN
+F 4 "Value" H 2120 6635 60  0001 C CNN "Fieldname"
+	1    2120 6635
+	0    -1   -1   0   
+$EndComp
+$Comp
+L +5V #PWR013
+U 1 1 59569A5C
+P 1490 4565
+F 0 "#PWR013" H 1490 4415 50  0001 C CNN
+F 1 "+5V" H 1490 4705 50  0000 C CNN
+F 2 "" H 1490 4565 50  0000 C CNN
+F 3 "" H 1490 4565 50  0000 C CNN
+	1    1490 4565
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_Small R1
+U 1 1 59569A65
+P 2085 4595
+F 0 "R1" V 2040 4675 50  0000 L CNN
+F 1 "NOPOP" V 2080 4530 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 2085 4595 50  0001 C CNN
+F 3 "" H 2085 4595 50  0000 C CNN
+F 4 "Value" H 2085 4595 60  0001 C CNN "Fieldname"
+	1    2085 4595
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R_Small R2
+U 1 1 59569A6C
+P 2085 4675
+F 0 "R2" V 2045 4755 50  0000 L CNN
+F 1 "NOPOP" V 2080 4610 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 2085 4675 50  0001 C CNN
+F 3 "" H 2085 4675 50  0000 C CNN
+F 4 "Value" H 2085 4675 60  0001 C CNN "Fieldname"
+	1    2085 4675
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R_Small R3
+U 1 1 59569A73
+P 2085 4745
+F 0 "R3" V 2045 4830 50  0000 L CNN
+F 1 "0R" V 2080 4720 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 2085 4745 50  0001 C CNN
+F 3 "" H 2085 4745 50  0000 C CNN
+F 4 "Value" H 2085 4745 60  0001 C CNN "Fieldname"
+	1    2085 4745
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R_Small R4
+U 1 1 59569A7A
+P 2085 4815
+F 0 "R4" V 2045 4900 50  0000 L CNN
+F 1 "NOPOP" V 2085 4750 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 2085 4815 50  0001 C CNN
+F 3 "" H 2085 4815 50  0000 C CNN
+F 4 "Value" H 2085 4815 60  0001 C CNN "Fieldname"
+	1    2085 4815
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R_Small R5
+U 1 1 59569A8D
+P 2085 4895
+F 0 "R5" V 2045 4980 50  0000 L CNN
+F 1 "0R" V 2080 4870 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 2085 4895 50  0001 C CNN
+F 3 "" H 2085 4895 50  0000 C CNN
+F 4 "Value" H 2085 4895 60  0001 C CNN "Fieldname"
+	1    2085 4895
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R_Small R6
+U 1 1 59569A94
+P 2085 4975
+F 0 "R6" V 2045 5060 50  0000 L CNN
+F 1 "0R" V 2080 4950 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 2085 4975 50  0001 C CNN
+F 3 "" H 2085 4975 50  0000 C CNN
+F 4 "Value" H 2085 4975 60  0001 C CNN "Fieldname"
+	1    2085 4975
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R_Small R13
+U 1 1 59569C5B
+P 3410 5045
+F 0 "R13" V 3365 5125 50  0000 L CNN
+F 1 "NOPOP" V 3405 4980 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 3410 5045 50  0001 C CNN
+F 3 "" H 3410 5045 50  0000 C CNN
+F 4 "Value" H 3410 5045 60  0001 C CNN "Fieldname"
+	1    3410 5045
+	0    -1   -1   0   
+$EndComp
+$Comp
+L +5V #PWR014
+U 1 1 59569F07
+P 3685 5230
+F 0 "#PWR014" H 3685 5080 50  0001 C CNN
+F 1 "+5V" H 3685 5370 50  0000 C CNN
+F 2 "" H 3685 5230 50  0000 C CNN
+F 3 "" H 3685 5230 50  0000 C CNN
+	1    3685 5230
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_Small R14
+U 1 1 5956A451
+P 3445 6705
+F 0 "R14" V 3400 6785 50  0000 L CNN
+F 1 "NOPOP" V 3440 6640 25  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 3445 6705 50  0001 C CNN
+F 3 "" H 3445 6705 50  0000 C CNN
+F 4 "Value" H 3445 6705 60  0001 C CNN "Fieldname"
+	1    3445 6705
+	0    -1   -1   0   
+$EndComp
+$Comp
+L +5V #PWR015
+U 1 1 5956A458
+P 3720 6890
+F 0 "#PWR015" H 3720 6740 50  0001 C CNN
+F 1 "+5V" H 3720 7030 50  0000 C CNN
+F 2 "" H 3720 6890 50  0000 C CNN
+F 3 "" H 3720 6890 50  0000 C CNN
+	1    3720 6890
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X02 P3
+U 1 1 5956BDBA
+P 6905 1595
+F 0 "P3" H 6905 1745 50  0000 C CNN
+F 1 "CONN_01X02" V 7005 1595 50  0000 C CNN
+F 2 "Socket_Strips:Socket_Strip_Straight_1x02" H 6905 1595 50  0001 C CNN
+F 3 "" H 6905 1595 50  0000 C CNN
+	1    6905 1595
+	-1   0    0    1   
+$EndComp
+NoConn ~ 5105 3570
+NoConn ~ 5105 3120
+NoConn ~ 5105 3030
+NoConn ~ 5105 2940
+NoConn ~ 5105 2850
+NoConn ~ 9330 1425
+NoConn ~ 6415 2840
+NoConn ~ 6415 2930
+NoConn ~ 6415 3020
+NoConn ~ 6415 3100
+NoConn ~ 5565 2560
+NoConn ~ 5655 2560
+NoConn ~ 5735 2560
+NoConn ~ 5815 2560
+NoConn ~ 5895 2560
+NoConn ~ 5975 2560
+$Comp
+L D D1
+U 1 1 5956819B
+P 7990 1545
+F 0 "D1" H 7990 1645 50  0000 C CNN
+F 1 "DB2431200L" H 7990 1445 50  0000 C CNN
+F 2 "balancingBot:TMiniP2-F2-B" H 7990 1545 50  0001 C CNN
+F 3 "https://industrial.panasonic.com/content/data/SC/ds/ds4/DB2431200L_E.pdf" H 7990 1545 50  0001 C CNN
+F 4 "Value" H 7990 1545 60  0001 C CNN "Fieldname"
+	1    7990 1545
+	-1   0    0    1   
+$EndComp
+$Comp
+L SW_DIP_x01 SW1
+U 1 1 595685A4
+P 7490 1545
+F 0 "SW1" H 7490 1695 50  0000 C CNN
+F 1 "SW_DIP_x01" H 7490 1395 50  0000 C CNN
+F 2 "Buttons_Switches_THT:SW_DIP_x1_Slide" H 7490 1545 50  0001 C CNN
+F 3 "" H 7490 1545 50  0000 C CNN
+	1    7490 1545
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_Small R16
+U 1 1 595697E0
+P 7505 2995
+F 0 "R16" H 7535 3015 50  0000 L CNN
+F 1 "3K3" H 7535 2955 50  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 7505 2995 50  0001 C CNN
+F 3 "" H 7505 2995 50  0000 C CNN
+F 4 "Value" H 7505 2995 60  0001 C CNN "Fieldname"
+	1    7505 2995
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_Small R17
+U 1 1 5956988A
+P 7505 3260
+F 0 "R17" H 7535 3280 50  0000 L CNN
+F 1 "2K2" H 7535 3220 50  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 7505 3260 50  0001 C CNN
+F 3 "" H 7505 3260 50  0000 C CNN
+F 4 "Value" H 7505 3260 60  0001 C CNN "Fieldname"
+	1    7505 3260
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR016
+U 1 1 59569A75
+P 7505 3410
+F 0 "#PWR016" H 7505 3160 50  0001 C CNN
+F 1 "GND" H 7505 3260 50  0000 C CNN
+F 2 "" H 7505 3410 50  0000 C CNN
+F 3 "" H 7505 3410 50  0000 C CNN
+	1    7505 3410
+	1    0    0    -1  
+$EndComp
+Text GLabel 7610 2705 2    60   Input ~ 0
+11.1V
+Text Notes 7670 3160 0    60   ~ 0
+Voltage Sense
+Text Label 5105 3410 2    60   ~ 0
+Rstep
+Text Label 2280 5045 2    60   ~ 0
+Rstep
+Text Label 5105 3490 2    60   ~ 0
+Rdir
+Text Label 2280 5115 2    60   ~ 0
+Rdir
+Text Label 2315 6775 2    60   ~ 0
+Ldir
+Text Label 5105 3320 2    60   ~ 0
+Ldir
+Text Label 5105 3220 2    60   ~ 0
+Lstep
+Text Label 2315 6705 2    60   ~ 0
+Lstep
+$Comp
+L CONN_01X02 P1
+U 1 1 595D4517
+P 4495 4770
+F 0 "P1" H 4495 4920 50  0000 C CNN
+F 1 "CONN_01X02" V 4595 4770 50  0000 C CNN
+F 2 "Socket_Strips:Socket_Strip_Straight_1x02" H 4495 4770 50  0001 C CNN
+F 3 "" H 4495 4770 50  0000 C CNN
+	1    4495 4770
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X02 P2
+U 1 1 595D4738
+P 4495 4970
+F 0 "P2" H 4495 5120 50  0000 C CNN
+F 1 "CONN_01X02" V 4595 4970 50  0000 C CNN
+F 2 "Socket_Strips:Socket_Strip_Straight_1x02" H 4495 4970 50  0001 C CNN
+F 3 "" H 4495 4970 50  0000 C CNN
+	1    4495 4970
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X02 P4
+U 1 1 595D499A
+P 4530 6430
+F 0 "P4" H 4530 6580 50  0000 C CNN
+F 1 "CONN_01X02" V 4630 6430 50  0000 C CNN
+F 2 "Socket_Strips:Socket_Strip_Straight_1x02" H 4530 6430 50  0001 C CNN
+F 3 "" H 4530 6430 50  0000 C CNN
+	1    4530 6430
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X02 P5
+U 1 1 595D49A0
+P 4530 6630
+F 0 "P5" H 4530 6780 50  0000 C CNN
+F 1 "CONN_01X02" V 4630 6630 50  0000 C CNN
+F 2 "Socket_Strips:Socket_Strip_Straight_1x02" H 4530 6630 50  0001 C CNN
+F 3 "" H 4530 6630 50  0000 C CNN
+	1    4530 6630
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X02 P6
+U 1 1 595D4B68
+P 6945 4290
+F 0 "P6" H 6945 4440 50  0000 C CNN
+F 1 "CONN_01X02" V 7045 4290 50  0000 C CNN
+F 2 "Socket_Strips:Socket_Strip_Straight_1x02" H 6945 4290 50  0001 C CNN
+F 3 "" H 6945 4290 50  0000 C CNN
+	1    6945 4290
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	8320 4675 8420 4675
+Wire Wire Line
+	8420 4675 8420 4800
+Wire Wire Line
+	8420 4340 8420 4445
+Wire Wire Line
+	8420 4445 8320 4445
+Wire Wire Line
+	9330 1855 9575 1855
+Wire Wire Line
+	3030 3315 3030 3240
+Wire Wire Line
+	3030 3240 3120 3240
+Wire Wire Line
+	3020 3035 3020 3080
+Wire Wire Line
+	3020 3080 3120 3080
+Wire Wire Line
+	4160 3390 4510 3390
+Wire Wire Line
+	4510 3390 4510 3750
+Wire Wire Line
+	4510 3750 5105 3750
+Wire Wire Line
+	4160 3520 4430 3520
+Wire Wire Line
+	4430 3520 4430 3840
+Wire Wire Line
+	4430 3840 5105 3840
+Wire Wire Line
+	4160 3270 4700 3270
+Wire Wire Line
+	4700 3270 4700 2315
+Wire Wire Line
+	4700 2315 6785 2315
+Wire Wire Line
+	6785 2315 6785 3540
+Wire Wire Line
+	6785 3540 6415 3540
+Wire Wire Line
+	6415 3840 6930 3840
+Wire Wire Line
+	6930 3840 6930 2230
+Wire Wire Line
+	6930 2230 4625 2230
+Wire Wire Line
+	4625 2230 4625 3150
+Wire Wire Line
+	4625 3150 4160 3150
+Wire Wire Line
+	3395 4410 3200 4410
+Wire Wire Line
+	3200 4410 3200 4585
+Wire Wire Line
+	3200 4655 3745 4655
+Wire Wire Line
+	3745 4655 3745 4440
+Wire Wire Line
+	3745 4440 3810 4440
+Wire Wire Line
+	3200 5115 3200 5220
+Wire Wire Line
+	3430 6070 3235 6070
+Wire Wire Line
+	3235 6315 3780 6315
+Wire Wire Line
+	3780 6315 3780 6100
+Wire Wire Line
+	3780 6100 3845 6100
+Wire Wire Line
+	3235 6070 3235 6245
+Wire Wire Line
+	3235 6775 3235 6880
+Wire Wire Line
+	1525 6225 1525 6405
+Wire Wire Line
+	1525 6405 2020 6405
+Wire Wire Line
+	4230 3040 4160 3040
+Wire Wire Line
+	4485 2950 4485 3040
+Wire Wire Line
+	4485 3040 4430 3040
+Wire Wire Line
+	4160 3670 5045 3670
+Wire Wire Line
+	5045 3670 5045 3660
+Wire Wire Line
+	5045 3660 5105 3660
+Wire Wire Line
+	2315 6255 2220 6255
+Wire Wire Line
+	2315 6335 2220 6335
+Wire Wire Line
+	2220 6405 2315 6405
+Wire Wire Line
+	2220 6475 2315 6475
+Wire Wire Line
+	2020 6475 1795 6475
+Wire Wire Line
+	1795 6475 1795 6405
+Connection ~ 1795 6405
+Wire Wire Line
+	2020 6335 1850 6335
+Wire Wire Line
+	1850 6255 1850 6405
+Connection ~ 1850 6405
+Wire Wire Line
+	2020 6255 1850 6255
+Connection ~ 1850 6335
+Wire Wire Line
+	2315 6555 2220 6555
+Wire Wire Line
+	2315 6635 2220 6635
+Wire Wire Line
+	2020 6555 1700 6555
+Wire Wire Line
+	1700 6405 1700 6635
+Connection ~ 1700 6405
+Wire Wire Line
+	1700 6635 2020 6635
+Connection ~ 1700 6555
+Wire Wire Line
+	1490 4565 1490 4745
+Wire Wire Line
+	1490 4745 1985 4745
+Wire Wire Line
+	2280 4595 2185 4595
+Wire Wire Line
+	2280 4675 2185 4675
+Wire Wire Line
+	2185 4745 2280 4745
+Wire Wire Line
+	2185 4815 2280 4815
+Wire Wire Line
+	1985 4815 1760 4815
+Wire Wire Line
+	1760 4815 1760 4745
+Connection ~ 1760 4745
+Wire Wire Line
+	1985 4675 1815 4675
+Wire Wire Line
+	1815 4595 1815 4745
+Connection ~ 1815 4745
+Wire Wire Line
+	1985 4595 1815 4595
+Connection ~ 1815 4675
+Wire Wire Line
+	2280 4895 2185 4895
+Wire Wire Line
+	2280 4975 2185 4975
+Wire Wire Line
+	1985 4895 1665 4895
+Wire Wire Line
+	1665 4745 1665 4975
+Connection ~ 1665 4745
+Wire Wire Line
+	1665 4975 1985 4975
+Connection ~ 1665 4895
+Wire Wire Line
+	3200 5045 3310 5045
+Wire Wire Line
+	3510 5045 3560 5045
+Wire Wire Line
+	3560 5045 3560 5270
+Wire Wire Line
+	3560 5270 3685 5270
+Wire Wire Line
+	3685 5270 3685 5230
+Wire Wire Line
+	3235 6705 3345 6705
+Wire Wire Line
+	3545 6705 3595 6705
+Wire Wire Line
+	3595 6705 3595 6930
+Wire Wire Line
+	3595 6930 3720 6930
+Wire Wire Line
+	3720 6930 3720 6890
+Wire Wire Line
+	3235 6395 4280 6395
+Wire Wire Line
+	4280 6395 4280 6380
+Wire Wire Line
+	4280 6380 4330 6380
+Wire Wire Line
+	3235 6475 4280 6475
+Wire Wire Line
+	4280 6475 4280 6480
+Wire Wire Line
+	4280 6480 4330 6480
+Wire Wire Line
+	3235 6555 4280 6555
+Wire Wire Line
+	4280 6555 4280 6580
+Wire Wire Line
+	4280 6580 4330 6580
+Wire Wire Line
+	3235 6635 4275 6635
+Wire Wire Line
+	4275 6635 4275 6680
+Wire Wire Line
+	4275 6680 4330 6680
+Wire Wire Line
+	3200 4735 4245 4735
+Wire Wire Line
+	4245 4735 4245 4720
+Wire Wire Line
+	4245 4720 4295 4720
+Wire Wire Line
+	3200 4815 4245 4815
+Wire Wire Line
+	4245 4815 4245 4820
+Wire Wire Line
+	4245 4820 4295 4820
+Wire Wire Line
+	3200 4895 4245 4895
+Wire Wire Line
+	4245 4895 4245 4920
+Wire Wire Line
+	4245 4920 4295 4920
+Wire Wire Line
+	3200 4975 4240 4975
+Wire Wire Line
+	4240 4975 4240 5020
+Wire Wire Line
+	4240 5020 4295 5020
+Wire Wire Line
+	8265 1505 8460 1505
+Wire Wire Line
+	8265 1505 8265 1545
+Wire Wire Line
+	8265 1545 8140 1545
+Wire Wire Line
+	8360 1225 8405 1225
+Wire Wire Line
+	8405 1225 8405 1505
+Connection ~ 8405 1505
+Wire Wire Line
+	7840 1545 7790 1545
+Wire Wire Line
+	7190 1545 7105 1545
+Wire Wire Line
+	7105 1645 7165 1645
+Wire Wire Line
+	7165 1645 7165 1825
+Wire Wire Line
+	7165 1825 8380 1825
+Wire Wire Line
+	8380 1825 8380 1695
+Wire Wire Line
+	8380 1695 8460 1695
+Wire Wire Line
+	7910 1825 7910 2125
+Connection ~ 7910 1825
+Wire Wire Line
+	7610 2705 7505 2705
+Wire Wire Line
+	7505 2705 7505 2895
+Wire Wire Line
+	7505 3095 7505 3160
+Wire Wire Line
+	7505 3360 7505 3410
+Wire Wire Line
+	6415 3460 6645 3460
+Wire Wire Line
+	6645 3460 6645 3130
+Wire Wire Line
+	6645 3130 7505 3130
+Connection ~ 7505 3130
+Wire Wire Line
+	7470 4225 7195 4225
+Wire Wire Line
+	7195 4225 7195 4240
+Wire Wire Line
+	7195 4240 7145 4240
+Wire Wire Line
+	7145 4340 7195 4340
+Wire Wire Line
+	7195 4340 7195 4365
+Wire Wire Line
+	7195 4365 7470 4365
+Text Label 7250 4225 0    60   ~ 0
+SCL
+Text Label 7255 4365 0    60   ~ 0
+SDA
+Text Label 5685 4170 3    60   ~ 0
+SCL
+Text Label 5565 4160 3    60   ~ 0
+SDA
+$EndSCHEMATC

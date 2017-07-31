@@ -270,4 +270,12 @@ F 3 "" H 8525 4165 50  0000 C CNN
 	1    8525 4165
 	1    0    0    -1  
 $EndComp
+Text Notes 9625 3670 0    50   ~ 0
+Yellow wire
+Text Notes 9625 3810 0    50   ~ 0
+White wire
+Text Notes 9630 3975 0    50   ~ 0
+Red wire
+Text Notes 9630 4135 0    50   ~ 0
+Green wire
 $EndSCHEMATC

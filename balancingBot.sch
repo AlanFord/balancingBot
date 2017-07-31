@@ -271,7 +271,7 @@ F 3 "" H 1415 6700 50  0000 C CNN
 	1    1415 6700
 	1    0    0    -1  
 $EndComp
-Text Notes 5335 7250 0    60   ~ 0
+Text Notes 4815 6280 0    60   ~ 0
 M0/M1/M2:\n0 0 0 - Full Step\n1 0 0 - 1/2 Step\n0 1 0 - 1/4 Step\n1 1 0 - 1/8 Step\n0 0 1 - 1/16 Step\nInternal pull down\n
 $Comp
 L R_Small R15
@@ -938,10 +938,10 @@ SDA
 Wire Wire Line
 	3120 6200 3120 6210
 $Comp
-L CP_Small C?
+L CP_Small C1
 U 1 1 597F365E
 P 3280 6510
-F 0 "C?" H 3290 6580 50  0000 L CNN
+F 0 "C1" H 3290 6580 50  0000 L CNN
 F 1 "100u" H 3290 6430 50  0000 L CNN
 F 2 "" H 3280 6510 50  0000 C CNN
 F 3 "" H 3280 6510 50  0000 C CNN
@@ -960,10 +960,10 @@ Wire Wire Line
 Wire Wire Line
 	3160 3640 3880 3640
 $Comp
-L CP_Small C?
+L CP_Small C2
 U 1 1 597F6244
 P 3430 4135
-F 0 "C?" H 3440 4205 50  0000 L CNN
+F 0 "C2" H 3440 4205 50  0000 L CNN
 F 1 "100u" H 3440 4055 50  0000 L CNN
 F 2 "" H 3430 4135 50  0000 C CNN
 F 3 "" H 3430 4135 50  0000 C CNN
@@ -977,4 +977,32 @@ Wire Wire Line
 	3430 4235 3430 4645
 Connection ~ 3430 4645
 Connection ~ 3430 3640
+Wire Notes Line
+	7525 615  7525 2240
+Wire Notes Line
+	7525 2240 10930 2240
+Wire Notes Line
+	10930 2240 10930 615 
+Wire Notes Line
+	10930 615  7525 615 
+Text Notes 8310 855  0    60   ~ 0
+Power Supply
+Wire Notes Line
+	7985 3610 7985 5275
+Wire Notes Line
+	7985 5275 10285 5275
+Wire Notes Line
+	10285 5275 10285 3610
+Wire Notes Line
+	10285 3610 7985 3610
+Wire Notes Line
+	1040 3165 5900 3165
+Wire Notes Line
+	5900 3165 5900 7575
+Wire Notes Line
+	5900 7575 1040 7575
+Wire Notes Line
+	1040 7575 1040 3160
+Text Notes 2405 3375 0    60   ~ 0
+Stepper Drivers
 $EndSCHEMATC

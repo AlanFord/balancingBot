@@ -6,10 +6,10 @@
 // Arduinio Pro Mini
 //
 // Arduino                      Motor Driver
-// D2                           Left Driver
-// D3                           Left Driver
-// D4                           Right Driver
-// D5                           Right Driver
+// D2                           Left Driver (Step??)
+// D3                           Left Driver (Direction??)
+// D4                           Right Driver (Step??)
+// D5                           Right Driver (Direction??)
 //
 // Arduino                      Voltage Divider
 // A0

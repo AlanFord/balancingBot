@@ -1,0 +1,273 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:remote
+LIBS:switches
+LIBS:remote-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L WRL-00691 U1
+U 1 1 5955949C
+P 2425 4095
+F 0 "U1" H 2445 3455 60  0000 C CNN
+F 1 "WRL-00691" H 2425 4640 60  0000 C CNN
+F 2 "remote:WRL-00691" H 2425 4095 60  0001 C CNN
+F 3 "" H 2425 4095 60  0001 C CNN
+	1    2425 4095
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR1
+U 1 1 5955A687
+P 1835 3710
+F 0 "#PWR1" H 1835 3560 50  0001 C CNN
+F 1 "+5V" H 1835 3850 50  0000 C CNN
+F 2 "" H 1835 3710 50  0000 C CNN
+F 3 "" H 1835 3710 50  0000 C CNN
+	1    1835 3710
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR2
+U 1 1 5955A6E0
+P 1845 3990
+F 0 "#PWR2" H 1845 3740 50  0001 C CNN
+F 1 "GND" H 1845 3840 50  0000 C CNN
+F 2 "" H 1845 3990 50  0000 C CNN
+F 3 "" H 1845 3990 50  0000 C CNN
+	1    1845 3990
+	1    0    0    -1  
+$EndComp
+Text Notes 1970 3460 0    60   ~ 0
+SPI 2.5 GHz Wireless
+$Comp
+L +5V #PWR3
+U 1 1 5955B40F
+P 3300 3625
+F 0 "#PWR3" H 3300 3475 50  0001 C CNN
+F 1 "+5V" H 3300 3765 50  0000 C CNN
+F 2 "" H 3300 3625 50  0000 C CNN
+F 3 "" H 3300 3625 50  0000 C CNN
+	1    3300 3625
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_Small R1
+U 1 1 5955CF79
+P 3145 3715
+F 0 "R1" H 3175 3735 50  0000 L CNN
+F 1 "0R" H 3175 3675 50  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 3145 3715 50  0001 C CNN
+F 3 "" H 3145 3715 50  0000 C CNN
+F 4 "Value" H 3145 3715 60  0001 C CNN "Fieldname"
+	1    3145 3715
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	1845 3990 1845 3915
+Wire Wire Line
+	1845 3915 1935 3915
+Wire Wire Line
+	1835 3710 1835 3755
+Wire Wire Line
+	1835 3755 1935 3755
+Wire Wire Line
+	3045 3715 2975 3715
+Wire Wire Line
+	3300 3625 3300 3715
+Wire Wire Line
+	3300 3715 3245 3715
+Text Label 9095 3785 2    60   ~ 0
+SCL
+Text Label 9095 3645 2    60   ~ 0
+SDA
+Text Label 4295 4745 2    60   ~ 0
+SCL
+Text Label 4295 4645 2    60   ~ 0
+SDA
+Text Label 2975 4065 0    60   ~ 0
+MOSI
+Text Label 2975 4195 0    60   ~ 0
+MISO
+Text Label 6195 3545 0    60   ~ 0
+MOSI
+Text Label 6195 3445 0    60   ~ 0
+MISO
+Text Label 2975 3825 0    60   ~ 0
+CSN
+Text Label 6195 3645 0    60   ~ 0
+CSN
+Text Label 2975 3945 0    60   ~ 0
+SCK
+Text Label 6195 3345 0    60   ~ 0
+SCK
+NoConn ~ 2975 4345
+$Comp
+L ARDUINO_SHIELD SHIELD1
+U 1 1 597F6567
+P 5245 3945
+F 0 "SHIELD1" H 4895 4895 60  0000 C CNN
+F 1 "ARDUINO_SHIELD" H 5295 2995 60  0000 C CNN
+F 2 "" H 5245 3945 60  0001 C CNN
+F 3 "" H 5245 3945 60  0001 C CNN
+	1    5245 3945
+	1    0    0    -1  
+$EndComp
+NoConn ~ 6195 3745
+NoConn ~ 6195 3845
+NoConn ~ 6195 4045
+NoConn ~ 6195 4145
+NoConn ~ 6195 4245
+NoConn ~ 6195 4345
+NoConn ~ 6195 4445
+NoConn ~ 6195 4545
+NoConn ~ 6195 4645
+NoConn ~ 6195 4745
+NoConn ~ 4295 4445
+NoConn ~ 4295 4545
+NoConn ~ 4295 4345
+NoConn ~ 4295 4245
+$Comp
+L +5V #PWR5
+U 1 1 597F6A40
+P 3940 3645
+F 0 "#PWR5" H 3940 3495 50  0001 C CNN
+F 1 "+5V" H 3940 3785 50  0000 C CNN
+F 2 "" H 3940 3645 50  0000 C CNN
+F 3 "" H 3940 3645 50  0000 C CNN
+	1    3940 3645
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3940 3645 3940 3745
+Wire Wire Line
+	3940 3745 4295 3745
+$Comp
+L GND #PWR4
+U 1 1 597F6ACB
+P 3930 3945
+F 0 "#PWR4" H 3930 3695 50  0001 C CNN
+F 1 "GND" H 3930 3795 50  0000 C CNN
+F 2 "" H 3930 3945 50  0000 C CNN
+F 3 "" H 3930 3945 50  0000 C CNN
+	1    3930 3945
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3930 3945 4295 3945
+Wire Wire Line
+	4295 3845 4115 3845
+Wire Wire Line
+	4115 3845 4115 3945
+Connection ~ 4115 3945
+NoConn ~ 4295 3545
+NoConn ~ 4295 4045
+NoConn ~ 6195 3145
+$Comp
+L GND #PWR7
+U 1 1 597F6C46
+P 6730 3245
+F 0 "#PWR7" H 6730 2995 50  0001 C CNN
+F 1 "GND" H 6730 3095 50  0000 C CNN
+F 2 "" H 6730 3245 50  0000 C CNN
+F 3 "" H 6730 3245 50  0000 C CNN
+	1    6730 3245
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6195 3245 6730 3245
+$Comp
+L nunchuck U2
+U 1 1 597F71F2
+P 9465 3865
+F 0 "U2" H 9465 3385 60  0000 C CNN
+F 1 "nunchuck" H 9455 4365 60  0000 C CNN
+F 2 "" H 9465 3865 60  0001 C CNN
+F 3 "" H 9465 3865 60  0001 C CNN
+	1    9465 3865
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR9
+U 1 1 597F7363
+P 8805 3945
+F 0 "#PWR9" H 8805 3695 50  0001 C CNN
+F 1 "GND" H 8805 3795 50  0000 C CNN
+F 2 "" H 8805 3945 50  0000 C CNN
+F 3 "" H 8805 3945 50  0000 C CNN
+	1    8805 3945
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9095 3945 8805 3945
+Wire Wire Line
+	9095 4105 9095 4165
+Wire Wire Line
+	9095 4165 8525 4165
+$Comp
+L +3.3V #PWR6
+U 1 1 597F766F
+P 4110 3435
+F 0 "#PWR6" H 4110 3285 50  0001 C CNN
+F 1 "+3.3V" H 4110 3575 50  0000 C CNN
+F 2 "" H 4110 3435 50  0000 C CNN
+F 3 "" H 4110 3435 50  0000 C CNN
+	1    4110 3435
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4110 3435 4110 3645
+Wire Wire Line
+	4110 3645 4295 3645
+$Comp
+L +3.3V #PWR8
+U 1 1 597F771C
+P 8525 4165
+F 0 "#PWR8" H 8525 4015 50  0001 C CNN
+F 1 "+3.3V" H 8525 4305 50  0000 C CNN
+F 2 "" H 8525 4165 50  0000 C CNN
+F 3 "" H 8525 4165 50  0000 C CNN
+	1    8525 4165
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC

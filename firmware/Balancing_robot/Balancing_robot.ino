@@ -1,19 +1,55 @@
+// TODO: see if something other than D13 can be used for low battery light
+// TODO: adjust the voltage divider math for new diodes and resistors
+// TODO: check if radio should be 5V or 3.3V
 ///////////////////////////////////////////////////////////////////////////////////////
-//Terms of use
-///////////////////////////////////////////////////////////////////////////////////////
-//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//THE SOFTWARE.
+// Wiring Configuration for the Build,RVA Version
+// Arduinio Pro Mini
+//
+// Arduino                      Motor Driver
+// D2                           Left Driver
+// D3                           Left Driver
+// D4                           Right Driver
+// D5                           Right Driver
+//
+// Arduino                      Voltage Divider
+// A0
+//
+// Arduino                      Voltage Regulator
+// ACC                          +5V
+// GND                          GND
+//
+// Arduino                      Gyro
+// A4                           SDA
+// A5                           SCL
+// GND                          GND
+// +5V                          VCC
+//
+// Arduino                      Radio
+// D9                           CE
+// D10                          CSN
+// D11                          MOSI
+// D12                          MISO
+// D13                          SCK
+// +3.3V                        VCC
+// GND                          GND
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#include <Wire.h>                                            //Include the Wire.h library so we can communicate with the gyro
+#include <Wire.h>   //Include the Wire.h library so we can communicate with the gyro
+#include <SPI.h>    //Include the SPI.h library for the radio
+#include "RF24.h"   //Don't know where this is coming from, but it's for the radio
 
+///////////////////////////////////////////////////////////////////////////////////////
+// User Config For the Radio
+// Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 9 & 10
+RF24 radio(9,10);
+byte radio_address[] = "1Node";
+///////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////
+// User Config for the gyro
 int gyro_address = 0x68;                                     //MPU-6050 I2C address (0x68 or 0x69)
 int acc_calibration_value = 1000;                            //Enter the accelerometer calibration value
+///////////////////////////////////////////////////////////////////////////////////////
 
 //Various settings
 float pid_p_gain = 15;                                       //Gain setting for the P-controller (15)
@@ -45,7 +81,10 @@ float pid_output_left, pid_output_right;
 //Setup basic functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup(){
-  Serial.begin(9600);                                                       //Start the serial port at 9600 kbps
+  radio.begin();                                                            //Start the SPI nRF24L01 radio
+  radio.openReadingPipe(1,radio_address);                                   // Open a reading pipe on the radio
+  radio.startListening();
+
   Wire.begin();                                                             //Start the I2C bus as master
   TWBR = 12;                                                                //Set the I2C clock speed to 400kHz
 
@@ -106,8 +145,8 @@ void setup(){
 //Main program loop
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void loop(){
-  if(Serial.available()){                                                   //If there is serial data available
-    received_byte = Serial.read();                                          //Load the received serial data in the received_byte variable
+  if(radio.available()){
+    radio.read(&received_byte,sizeof(received_byte));
     receive_counter = 0;                                                    //Reset the receive_counter variable
   }
   if(receive_counter <= 25)receive_counter ++;                              //The received byte will be valid for 25 program loops (100 milliseconds)
@@ -115,7 +154,7 @@ void loop(){
   
   //Load the battery voltage to the battery_voltage variable.
   //85 is the voltage compensation for the diode.
-  //Resistor voltage divider => (3.3k + 3.3k)/2.2k = 2.5
+  //Resistor voltage divider => (3.3k + 2.2k)/2.2k = 2.5
   //12.5V equals ~5V @ Analog 0.
   //12.5V equals 1023 analogRead(0).
   //1250 / 1023 = 1.222.

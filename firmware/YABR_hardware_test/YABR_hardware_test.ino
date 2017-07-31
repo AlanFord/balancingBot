@@ -38,7 +38,8 @@ void loop()
       if (address<16)Serial.print("0");
       Serial.println(address,HEX);
       nDevices++;
-      if(address == 0x68 || address == 0x69){
+      if(address == 0x68 || address == 0x69)
+      {
         Serial.println("This could be a MPU-6050");
         Wire.beginTransmission(address);
         Wire.write(0x75);
@@ -47,22 +48,26 @@ void loop()
         Wire.requestFrom(address, 1);
         while(Wire.available() < 1);
         lowByte = Wire.read();
-        if(lowByte == 0x68){
+        if(lowByte == 0x68)
+        {
           Serial.print("Who Am I responce is ok: 0x");
           Serial.println(lowByte, HEX);
         }
-        else{
+        else
+        {
           Serial.print("Wrong Who Am I responce: 0x");
           if (lowByte<16)Serial.print("0");
           Serial.println(lowByte, HEX);
         }
-        if(lowByte == 0x68 && address == 0x68){
+        if(lowByte == 0x68 && address == 0x68)
+        {
           MPU_6050_found = 1;
           Serial.println("Starting Gyro....");
           set_gyro_registers();
         }
       }
-      if(address == 0x52){
+      if(address == 0x52)
+      {
         Serial.println("This could be a Nunchuck");
         Serial.println("Trying to initialise the device...");
         Wire.beginTransmission(0x52);
@@ -82,12 +87,14 @@ void loop()
         Wire.requestFrom(0x52,1);
         while(Wire.available() < 1);
         lowByte = Wire.read();
-        if(lowByte > 100 && lowByte < 160){
+        if(lowByte > 100 && lowByte < 160)
+        {
           Serial.print("Data response normal: ");
           Serial.println(lowByte);
           nunchuck_found = 1;
         }
-        else{
+        else
+        {
           Serial.print("Data response is not normal: ");
           Serial.println(lowByte);
         }
@@ -105,7 +112,8 @@ void loop()
     Serial.println("No I2C devices found\n");
   else
     Serial.println("done\n");
-  if(MPU_6050_found){
+  if(MPU_6050_found)
+  {
     Serial.print("Balance value: ");
     Wire.beginTransmission(0x68);
     Wire.write(0x3F);
@@ -114,7 +122,8 @@ void loop()
     Serial.println((Wire.read()<<8|Wire.read())*-1);
     delay(20);
     Serial.println("Printing raw gyro values");
-    for(address = 0; address < 20; address++ ){
+    for(address = 0; address < 20; address++ )
+    {
       Wire.beginTransmission(0x68);
       Wire.write(0x43);
       Wire.endTransmission();
@@ -131,9 +140,11 @@ void loop()
   }
   else Serial.println("No MPU-6050 device found at address 0x68");
 
-  if(nunchuck_found){
+  if(nunchuck_found)
+  {
     Serial.println("Printing raw Nunchuck values");
-    for(address = 0; address < 20; address++ ){ 
+    for(address = 0; address < 20; address++ )
+    { 
       Wire.beginTransmission(0x52);
       Wire.write(0x00);
       Wire.endTransmission();

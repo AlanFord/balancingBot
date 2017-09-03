@@ -33,7 +33,7 @@ LIBS:switches
 LIBS:remote-cache
 EELAYER 25 0
 EELAYER END
-$Descr A4 11693 8268
+$Descr A 11000 8500
 encoding utf-8
 Sheet 1 1
 Title ""
@@ -117,9 +117,9 @@ Wire Wire Line
 	3300 3625 3300 3715
 Wire Wire Line
 	3300 3715 3245 3715
-Text Label 9095 3785 2    60   ~ 0
+Text Label 8235 4155 2    60   ~ 0
 SCL
-Text Label 9095 3645 2    60   ~ 0
+Text Label 8235 4015 2    60   ~ 0
 SDA
 Text Label 4295 4745 2    60   ~ 0
 SCL
@@ -219,31 +219,31 @@ Wire Wire Line
 $Comp
 L nunchuck U2
 U 1 1 597F71F2
-P 9465 3865
-F 0 "U2" H 9465 3385 60  0000 C CNN
-F 1 "nunchuck" H 9455 4365 60  0000 C CNN
-F 2 "" H 9465 3865 60  0001 C CNN
-F 3 "" H 9465 3865 60  0001 C CNN
-	1    9465 3865
+P 8605 4235
+F 0 "U2" H 8605 3755 60  0000 C CNN
+F 1 "nunchuck" H 8595 4735 60  0000 C CNN
+F 2 "" H 8605 4235 60  0001 C CNN
+F 3 "" H 8605 4235 60  0001 C CNN
+	1    8605 4235
 	1    0    0    -1  
 $EndComp
 $Comp
 L GND #PWR9
 U 1 1 597F7363
-P 8805 3945
-F 0 "#PWR9" H 8805 3695 50  0001 C CNN
-F 1 "GND" H 8805 3795 50  0000 C CNN
-F 2 "" H 8805 3945 50  0000 C CNN
-F 3 "" H 8805 3945 50  0000 C CNN
-	1    8805 3945
+P 7945 4315
+F 0 "#PWR9" H 7945 4065 50  0001 C CNN
+F 1 "GND" H 7945 4165 50  0000 C CNN
+F 2 "" H 7945 4315 50  0000 C CNN
+F 3 "" H 7945 4315 50  0000 C CNN
+	1    7945 4315
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	9095 3945 8805 3945
+	8235 4315 7945 4315
 Wire Wire Line
-	9095 4105 9095 4165
+	8235 4475 8235 4535
 Wire Wire Line
-	9095 4165 8525 4165
+	8235 4535 7665 4535
 $Comp
 L +3.3V #PWR6
 U 1 1 597F766F
@@ -262,20 +262,20 @@ Wire Wire Line
 $Comp
 L +3.3V #PWR8
 U 1 1 597F771C
-P 8525 4165
-F 0 "#PWR8" H 8525 4015 50  0001 C CNN
-F 1 "+3.3V" H 8525 4305 50  0000 C CNN
-F 2 "" H 8525 4165 50  0000 C CNN
-F 3 "" H 8525 4165 50  0000 C CNN
-	1    8525 4165
+P 7665 4535
+F 0 "#PWR8" H 7665 4385 50  0001 C CNN
+F 1 "+3.3V" H 7665 4675 50  0000 C CNN
+F 2 "" H 7665 4535 50  0000 C CNN
+F 3 "" H 7665 4535 50  0000 C CNN
+	1    7665 4535
 	1    0    0    -1  
 $EndComp
-Text Notes 9625 3670 0    50   ~ 0
+Text Notes 8765 4040 0    50   ~ 0
 Yellow wire
-Text Notes 9625 3810 0    50   ~ 0
+Text Notes 8765 4180 0    50   ~ 0
 White wire
-Text Notes 9630 3975 0    50   ~ 0
+Text Notes 8770 4345 0    50   ~ 0
 Red wire
-Text Notes 9630 4135 0    50   ~ 0
+Text Notes 8770 4505 0    50   ~ 0
 Green wire
 $EndSCHEMATC

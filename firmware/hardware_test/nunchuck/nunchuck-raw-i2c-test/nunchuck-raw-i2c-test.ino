@@ -1,36 +1,60 @@
 ///////////////////////////////////////////////////////////////////////////////////////
-//   Transceiver test for the Balancing Robot
+//   Wii Nunchuck test for the Balancing Robot
 //
-//   This routine is designed to test the SPI interface of a WRL-00691, a nRF24L01+ breakout.
+//   This routine is designed to test the I2C interface of a Wii Nunchuck.  Note that
+//   the wiring colors may vary from what is documented here, depending on the hardware
+//   vendor.
 //
+//   Nominally the values sent by the nunchuck for X qnd Y will vary from 0 to 255,
+//   left to right (X) and reverse to forward (Y)
+//   
+//   Nunchuck Wiring (looking into the nunchuck connector):
+//   
+//   white(scl)                   red(gnd)
+//   -----------                 -------------
+//   |         |                 |           |
+//   |         | ----------------|           |
+//   |                                       |
+//   |---------------------------------------|
+//   green(vcc)   black(detect)   yellow(sda)
 //
-//   WRL-00691 <---------------------> Arduino Wiring:
+//   I2C data: see http://dangerousprototypes.com/blog/2009/08/19/bus-pirate-wii-nunchuck-quick-guide/
+//   http://robotshop.com/letsmakerobots/wii-nunchuckarduino-tutorial
+//   https://create.arduino.cc/projecthub/infusion/using-a-wii-nunchuk-with-arduino-597254
 //
+//   Arduino Wiring:
 //   Assuming UNO (other boards may vary):
-//   UNO                    WRL-00691
-//   GND                    GND
-//   Pin 8                  IRQ  (active low)
-//   Pin 12 (MISO)          MISO (3.3V-5V SPI slave output)
-//   Pin 11 (MOSI)          MOSI (3.3V-5V SPI slave input)
-//   Pin 13 (SCK)           SCK  (3.3V-5V SPI clock)
-//   Pin 10 (SS)            CSN  (3.3V-5V SPI chip select)
-//   Pin 9                  CE   (3.3V-5V chip enable)
-//   +3.3V                  VCC  (3.3V-7V)
+//   UNO        Nunchuck
+//   Analog 4 = SDA (4.7K pullup not required)
+//   Analog 5 = SCL (4.7K pullup not required)
+//   GND      = GND
+//   +3.3V    = VCC
 //
 //
 ///////////////////////////////////////////////////////////////////////////////////////
 #include <Wire.h>
+#include <printf.h>
 #define NUNCHUCK_ADDR 0x52
 
 byte error, nunchuck_found, lowByte, highByte;
 int address;
 int nDevices;
 
+void initialize_serial(){
+    Serial.begin(9600);                                               //Start the serial port at 9600 kbps
+    printf_begin();
+}
+
+void initialize_I2C() {
+    Wire.begin();                                                             //Start the I2C bus as master
+    //TWBR = 12;                                                                //Set the I2C clock speed to 400kHz
+    delay(20);                                                                //Short delay
+}
+
 void setup()
 {
-  Wire.begin();
-  Wire.setClock(400000);  // set the I2C speed to 400kb/sec
-  Serial.begin(9600);
+  initialize_I2C();
+  initialize_serial();
   nunchuck_found = 0;
 }
 

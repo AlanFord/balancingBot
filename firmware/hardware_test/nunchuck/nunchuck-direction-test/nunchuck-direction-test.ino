@@ -1,9 +1,13 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 //   Wii Nunchuck test for the Balancing Robot
 //
-//   This routine is designed to test the I2C interface of a Wii Nunchuck.  Note that
+//   This routine is designed to test the I2C interface of a Wii Nunchuck.
+//   Note that
 //   the wiring colors may vary from what is documented here, depending on the hardware
 //   vendor.
+//   
+//   Nominally the values sent by the nunchuck for X qnd Y will vary from 0 to 255,
+//   left to right (X) and reverse to forward (Y)
 //   
 //   Nunchuck Wiring (looking into the nunchuck connector):
 //   
@@ -30,17 +34,32 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////
 #include <Wire.h>
+#include <printf.h>
+
 #define NUNCHUCK_ADDR 0x52
+#define LOW_DEADZONE 80
+#define HIGH_DEADZONE 170
 
 byte error, nunchuck_found, lowByte, highByte;
 int address;
 int nDevices;
+int x, y;
+
+void initialize_serial(){
+    Serial.begin(9600);                                               //Start the serial port at 9600 kbps
+    printf_begin();
+}
+
+void initialize_I2C() {
+    Wire.begin();                                                             //Start the I2C bus as master
+    //TWBR = 12;                                                                //Set the I2C clock speed to 400kHz
+    delay(20);                                                                //Short delay
+}
 
 void setup()
 {
-  Wire.begin();
-  Wire.setClock(400000);  // set the I2C speed to 400kb/sec
-  Serial.begin(9600);
+  initialize_I2C();
+  initialize_serial();
   nunchuck_found = 0;
 }
 
@@ -99,19 +118,29 @@ void loop()
     Serial.println("done\n");
   if(nunchuck_found)
   {
-    Serial.println("Printing raw Nunchuck values");
-    for(address = 0; address < 20; address++ )
-    { 
+    Serial.println("Printing Nunchuck Move Directions");
+    while(1)
+    {
       Wire.beginTransmission(NUNCHUCK_ADDR);
       Wire.write(0x00);                     // reset the address to 0x00
       Wire.endTransmission();
       Wire.requestFrom(NUNCHUCK_ADDR,2);    // request two bytes from the nunchuck
       while(Wire.available() < 2);          // wait for at least 2 bytes to be available
-      Serial.print("Joystick X = "); 
-      Serial.print(Wire.read());            // read and print a byte
-      Serial.print(" Joystick y = ");
-      Serial.println(Wire.read());          // read and print a byte
-      delay(100);
+      x = Wire.read();                      // x position, 0 to 255
+      y = Wire.read();                      // y position, 0 to 255
+      if (x < LOW_DEADZONE) {
+        Serial.println("Left");
+      }
+      else if (x > HIGH_DEADZONE) {
+        Serial.println("Right");        
+      }
+      else if (y < LOW_DEADZONE) {
+        Serial.println("Reverse");        
+      }
+      else if (y > HIGH_DEADZONE) {
+        Serial.println("Forward");        
+      }
+      delay(1000);      
     }
   }
   else Serial.println("No Nunchuck device found at address 0x52");

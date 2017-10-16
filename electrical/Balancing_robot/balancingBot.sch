@@ -189,9 +189,9 @@ F 3 "" H 720 1790 50  0000 C CNN
 	1    720  1790
 	1    0    0    -1  
 $EndComp
-Text Notes 2435 4320 0    60   ~ 0
+Text Notes 2370 6430 0    60   ~ 0
 Right Stepper
-Text Notes 2390 6465 0    60   ~ 0
+Text Notes 2435 4295 0    60   ~ 0
 Left Stepper
 Text Notes 9285 5290 0    60   ~ 0
 I2C Gyro
@@ -340,15 +340,15 @@ Text GLabel 5300 1180 2    60   Input ~ 0
 11.75V
 Text Notes 5360 1635 0    60   ~ 0
 Voltage Sense
-Text Label 2795 1885 2    60   ~ 0
-Rstep
-Text Label 2795 1965 2    60   ~ 0
-Rdir
-Text Label 2240 5105 2    50   ~ 0
-Rdir
-Text Label 2795 1795 2    60   ~ 0
-Ldir
 Text Label 2795 1695 2    60   ~ 0
+Rstep
+Text Label 2795 1795 2    60   ~ 0
+Rdir
+Text Label 2205 7250 2    50   ~ 0
+Rdir
+Text Label 2795 1965 2    60   ~ 0
+Ldir
+Text Label 2795 1885 2    60   ~ 0
 Lstep
 Text Label 9025 5585 2    60   ~ 0
 SCL
@@ -404,9 +404,9 @@ NoConn ~ 2795 2135
 NoConn ~ 1850 2145
 NoConn ~ 2240 4585
 NoConn ~ 3160 5035
-Text Label 2205 7180 2    50   ~ 0
+Text Label 2240 5035 2    50   ~ 0
 Lstep
-Text Label 2205 7250 2    50   ~ 0
+Text Label 2240 5105 2    50   ~ 0
 Ldir
 NoConn ~ 2205 6730
 NoConn ~ 3125 7180
@@ -680,7 +680,7 @@ Wire Wire Line
 Wire Wire Line
 	8270 3860 8270 3960
 NoConn ~ 8070 4060
-Text Label 2240 5035 2    50   ~ 0
+Text Label 2205 7180 2    50   ~ 0
 Rstep
 $Comp
 L R_Small R104
@@ -821,4 +821,8 @@ Connection ~ 1660 6505
 Wire Wire Line
 	1790 6540 1790 6505
 Connection ~ 1790 6505
+Text Notes 4655 5035 0    60   ~ 0
+Blue\nRed\nBlack\nGreen
+Text Notes 4370 7170 0    60   ~ 0
+Green\nBlack\nRed\nBlue
 $EndSCHEMATC

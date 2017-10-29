@@ -155,6 +155,7 @@ void loop(){
   Serial.println(angle_acc);
   retrieve_gyro_pitch_and_yaw();
   angle_gyro += gyro_pitch_data_raw * 0.000031;                             //Calculate the traveled during this loop angle and add this to the angle_gyro variable
+  // 0.000031 == (1/131 deg/sec/LSB) * 0.004 sec/loop = 0.00003053
   
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //MPU-6050 offset compensation

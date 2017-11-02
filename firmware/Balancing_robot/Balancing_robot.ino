@@ -1,3 +1,10 @@
+/////////////////////////////////////////////////////////////////////////////////////
+/// \file Balancing_robot.ino
+/// \brief Control code for two wheeled balancing robot
+///
+/////////////////////////////////////////////////////////////////////////////////////
+
+
 // TODO: see if something other than D13 can be used for low battery light
 // TODO: adjust the voltage divider math for new diodes and resistors
 // TODO: check if radio should be 5V or 3.3V
@@ -38,74 +45,73 @@
 
 #include <Wire.h>   //Include the Wire.h library so we can communicate with the gyro
 #include <SPI.h>    //Include the SPI.h library for the radio
-#include "RF24.h"   //Don't know where this is coming from, but it's for the radio
-#include <printf.h>
+//#include <printf.h>
 
-///////////////////////////////////////////////////////////////////////////////////////
-// Radio signal data for bot control
-#define RADIO_NULL  B00000000
-#define BOT_LEFT    B00000001
-#define BOT_RIGHT   B00000010
-#define BOT_FORWARD B00000100
-#define BOT_REVERSE B00001000
-#define BOT_STABLE  B00001100
-///////////////////////////////////////////////////////////////////////////////////////
+#define DEBUG
+#include "DebugUtils.h"
 
-#define DEGREEPERRADIAN  57.296
-
-///////////////////////////////////////////////////////////////////////////////////////
-// User Config For the Radio
-// Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 9 & 10
-RF24 radio(9,10);
-byte radio_address[] = "1robt";
-///////////////////////////////////////////////////////////////////////////////////////
+static byte radio_address[] = "1robt";
 
 
-///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+///  \brief conversion factor in Degrees/Radian
+////////////////////////////////////////////////////////
+const double DEGREEPERRADIAN  = 57.296;
+
+
 // User Config for the gyro
-int gyro_address = 0x68;                                     //MPU-6050 I2C address (0x68 or 0x69)
-int acc_calibration_value = -600;                            //Enter the accelerometer calibration value
-///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+///  \brief MPU-6050 I2C address (0x68 or 0x69).
+////////////////////////////////////////////////////////
+const int gyro_address = 0x68;
 
 
-///////////////////////////////////////////////////////////////////////////////////////
-//Various settings
-float pid_p_gain = 15;                                       //Gain setting for the P-controller (15)
-float pid_i_gain = 1.5;                                      //Gain setting for the I-controller (1.5)
-float pid_d_gain = 30;                                       //Gain setting for the D-controller (30)
-float turning_speed = 30;                                    //Turning speed (20)
-float max_target_speed = 150;                                //Max target speed (100)
-///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+///  \brief Gain setting for the P-controller (15).
+////////////////////////////////////////////////////////
+const float pid_p_gain = 15;                                 
+////////////////////////////////////////////////////////
+///  \brief Gain setting for the I-controller (1.5).
+////////////////////////////////////////////////////////
+const float pid_i_gain = 1.5;                                      
+////////////////////////////////////////////////////////
+///  \brief Gain setting for the D-controller (30).
+////////////////////////////////////////////////////////
+const float pid_d_gain = 30;                                       
+////////////////////////////////////////////////////////
+///  \brief Turning speed (20).
+////////////////////////////////////////////////////////
+const float turning_speed = 30;                                   
+////////////////////////////////////////////////////////
+///  \brief Max target speed (100).
+////////////////////////////////////////////////////////
+const float max_target_speed = 150;                                
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Declaring global variables
-byte start, received_byte, low_bat;
-
-int left_motor, throttle_left_motor, throttle_counter_left_motor, throttle_left_motor_memory;
-int right_motor, throttle_right_motor, throttle_counter_right_motor, throttle_right_motor_memory;
-int battery_voltage;
-int receive_counter;
-int gyro_pitch_data_raw, gyro_yaw_data_raw, accelerometer_data_raw;
-
-long gyro_yaw_calibration_value, gyro_pitch_calibration_value;
 
 unsigned long loop_timer;
 
-float angle_gyro, angle_acc, angle, self_balance_pid_setpoint;
+
+int left_motor, throttle_left_motor, throttle_counter_left_motor, throttle_left_motor_memory;
+int right_motor, throttle_right_motor, throttle_counter_right_motor, throttle_right_motor_memory;
+float angle, self_balance_pid_setpoint;
 float pid_error_temp, pid_i_mem, pid_setpoint, gyro_input, pid_output, pid_last_d_error;
 float pid_output_left, pid_output_right;
+//byte start;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Setup basic functions
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+/// \brief Initializes the serial link, the I2C bus, and the gyro (on the I2C bus).  Subsequently
+/// calibrates the gyro, initializes the main timer, initializes the stepper motor control
+/// lines, and finally initializes the wireless radio link.
+///
+/// \return void
+///////////////////////////////////////////////////////////////////////////////
 void setup(){
-  initialize_serial();
+  initialize_serial(9600);
   initialize_I2C();  // the I2C bus is used to communicate with the gyro
-  wake_gyro();
-  calibrate_gyro();
+  wake_gyro(gyro_address);
+  calibrate_gyro(gyro_address);
   initialize_timer();  //timer will be used to send pulse trains to the stepper motors
   
   // initialize pins used for stepper motor control
@@ -115,71 +121,103 @@ void setup(){
   pinMode(5, OUTPUT);                                                       //Configure digital port 5 as output
   
    // initializing radio at the end of "setup", as it uses the same pin (D13) as the led
-  initialize_radio();
+  initialize_radio(radio_address);
  
   loop_timer = micros() + 4000;                                             //Set the loop_timer variable at the next end loop time
-  Serial.println("initialized . . .");
+  DEBUG_PRINT("initialized . . .");
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Main program loop
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+/// \brief Main program loop
+///
+/// \return void
+///////////////////////////////////////////////////////////////////////////////
 void loop(){
+  float angle_gyro;
+  byte received_byte, low_bat;
+  byte start;
+
+  if (!battery_voltage_is_acceptable()){
+    digitalWrite(13, HIGH);                                                 //Turn on the led if battery voltage is to low
+    low_bat = 1;                                                            //Set the low_bat variable to 1    
+  }
   //check_battery_voltage();  // WARNING- may conflict with the SPI SCK function!
+  
+  received_byte = get_radio_data();
 
-  // receive data from the radio (i.e. from the remote controller)
-  if(radio.available()){
-    radio.read(&received_byte,sizeof(received_byte));
-    receive_counter = 0;                                                    //Reset the receive_counter variable
+  angle_gyro = get_angle_gyro(gyro_address);
+  
+  if(angle_gyro > 30 || angle_gyro < -30 || start == 0 || low_bat == 1) {   //If the robot tips over or the start variable is zero or the battery is empty
+    pid_output = resetPID();
+    start = 0;                                                              //Set the start variable to 0
   }
-  if(receive_counter <= 25)
-    receive_counter ++;                                                     //The received byte will be valid for 25 program loops (100 milliseconds)
   else {
-    received_byte = 0x00;                                                   //After 100 milliseconds the received byte is deleted
-    receive_counter = 0;                                                    //Reset the receive_counter variable
+    //PID controller calculations
+    //The balancing robot is angle driven. First the difference between the desired angle (setpoint) and actual angle (process value)
+    //is calculated. The self_balance_pid_setpoint variable is automatically changed to make sure that the robot stays balanced all the time.
+    //The (pid_setpoint - pid_output * 0.015) part functions as a brake function.
+    pid_error_temp = angle_gyro - self_balance_pid_setpoint - pid_setpoint;
+    if(pid_output > 10 || pid_output < -10) {
+      pid_error_temp += pid_output * 0.015 ;    
+    }
+    pid_output = PID_calculation(pid_error_temp, low_bat);
   }
+
+  control_calculations(received_byte);
+
+  motor_pulse_calculations();
   
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //Angle calculations
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  retrieve_gyro_acceleration();												//acc data is limited to +/-8200
-  angle_acc = asin((float)accelerometer_data_raw/8200.0)* DEGREEPERRADIAN;  //Calculate the current angle in degrees [-90,+90] according to the accelerometer
-  if(start == 0 && angle_acc > -0.5&& angle_acc < 0.5){                     //If the accelerometer angle is almost 0
-    angle_gyro = angle_acc;                                                 //Load the accelerometer angle in the angle_gyro variable
-    start = 1;                                                              //Set the start variable to start the PID controller
+  //Loop time timer
+  //The angle calculations are tuned for a loop time of 4 milliseconds. To make sure every loop is exactly 4 milliseconds a wait loop
+  //is created by setting the loop_timer variable to +4000 microseconds every loop.
+  while(loop_timer > micros());
+  loop_timer += 4000;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// \brief Determines the battery supply voltage based on ADC measured voltage 
+/// from a resistor divider.
+///
+/// \details The voltage on Analog Pin A0 is formed by a resistor divider of 3.3k
+/// and 2.2k ohms.  The measured voltage is 1/2.5 times the supply voltage.
+/// Thus a supply voltage of 5V*2.5 == 12.5V == 1023 on analogRead(0).  Multiplying
+/// the analogRead value by 12.5/1023*1000 == 12.22 results the supply voltage in
+/// millivolts.  The voltage drop across the diode is roughly 0.85V, so the battery 
+/// voltage in millivolts can be determined by (analogRead(0) * 12.22) + 850
+/// Acceptable range of voltage for a LiPo battery is between 10.5V and 8.0V,
+/// or 10500 mV and 8000 mV.
+/// 
+/// \return void
+///////////////////////////////////////////////////////////////////////////////
+bool battery_voltage_is_acceptable(void) {
+  int battery_mV;
+  const int lowVoltage = 8000;
+  const int highVoltage = 10500;
+  const int diodeDrop = 850;
+  const int voltageScaler = 12.22;
+  battery_mV = (analogRead(0) * voltageScaler) + diodeDrop;
+  if(battery_mV < highVoltage && battery_mV > lowVoltage) {
+    return true;
+  } 
+  else {
+    return false;
   }
-  Serial.print("raw data is ");
-  Serial.println(accelerometer_data_raw);
-  Serial.print("Angle is ");
-  Serial.println(angle_acc);
-  retrieve_gyro_pitch_and_yaw();
-  angle_gyro += gyro_pitch_data_raw * 0.000031;                             //Calculate the traveled during this loop angle and add this to the angle_gyro variable
-  // 0.000031 == (1/131 deg/sec/LSB) * 0.004 sec/loop = 0.00003053
-  
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //MPU-6050 offset compensation
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //Not every gyro is mounted 100% level with the axis of the robot. This can be cause by misalignments during manufacturing of the breakout board. 
-  //As a result the robot will not rotate at the exact same spot and start to make larger and larger circles.
-  //To compensate for this behavior a VERY SMALL angle compensation is needed when the robot is rotating.
-  //Try 0.0000003 or -0.0000003 first to see if there is any improvement.
+}
 
-  //Uncomment the following line to make the compensation active
-  //angle_gyro -= gyro_yaw_data_raw * 0.0000003;                            //Compensate the gyro offset when the robot is rotating
 
-  angle_gyro = angle_gyro * 0.9996 + angle_acc * 0.0004;                    //Correct the drift of the gyro angle with the accelerometer angle
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //PID controller calculations
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //The balancing robot is angle driven. First the difference between the desired angle (setpoint) and actual angle (process value)
-  //is calculated. The self_balance_pid_setpoint variable is automatically changed to make sure that the robot stays balanced all the time.
-  //The (pid_setpoint - pid_output * 0.015) part functions as a brake function.
-  pid_error_temp = angle_gyro - self_balance_pid_setpoint - pid_setpoint;
-  if(pid_output > 10 || pid_output < -10) {
-    pid_error_temp += pid_output * 0.015 ;    
-  }
+
+///////////////////////////////////////////////////////////////////////////////
+/// \brief Performs PID calculations given the pid error 
+///
+/// \param[in] pid_error_temp error value to be used in PID calculations
+/// \param[in] low_bat low battery indicator
+///
+/// \return tilt angle 
+///////////////////////////////////////////////////////////////////////////////
+///      >>>>>>>>>>>>>>>>>>>>>>>UPDATE<<<<<<<<<<<<<<<<<<<<<<<<<<<
+float PID_calculation(float pid_error_temp, byte low_bat) {
   pid_i_mem += pid_i_gain * pid_error_temp;                                 //Calculate the I-controller value and add it to the pid_i_mem variable
   if(pid_i_mem > 400) {
     pid_i_mem = 400;                                                        //Limit the I-controller to the maximum controller output
@@ -201,17 +239,35 @@ void loop(){
   if(pid_output < 5 && pid_output > -5) {
     pid_output = 0;                                                         //Create a dead-band to stop the motors when the robot is balanced
   }
+  return pid_output;  
+}
 
-  if(angle_gyro > 30 || angle_gyro < -30 || start == 0 || low_bat == 1) {   //If the robot tips over or the start variable is zero or the battery is empty
-    pid_output = 0;                                                         //Set the PID controller output to 0 so the motors stop moving
-    pid_i_mem = 0;                                                          //Reset the I-controller memory
-    start = 0;                                                              //Set the start variable to 0
-    self_balance_pid_setpoint = 0;                                          //Reset the self_balance_pid_setpoint variable
-  }
+float resetPID() {
+  pid_output = 0;                                                         //Set the PID controller output to 0 so the motors stop moving
+  pid_i_mem = 0;                                                          //Reset the I-controller memory
+  self_balance_pid_setpoint = 0;                                          //Reset the self_balance_pid_setpoint variable
+  return pid_output;  
+}
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //Control calculations
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+// Radio signal data for bot control
+#define RADIO_NULL  B00000000
+#define BOT_LEFT    B00000001
+#define BOT_RIGHT   B00000010
+#define BOT_FORWARD B00000100
+#define BOT_REVERSE B00001000
+#define BOT_STABLE  B00001100
+///////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+/// \brief Adjust pid_output data for motion control commands 
+///
+/// \param[in] received_byte control byte received from the nunchuck
+///
+/// \return void 
+///////////////////////////////////////////////////////////////////////////////
+///      >>>>>>>>>>>>>>>>>>>>>>>UPDATE<<<<<<<<<<<<<<<<<<<<<<<<<<<
+void control_calculations(byte received_byte) {
   pid_output_left = pid_output;                                             //Copy the controller output to the pid_output_left variable for the left motor
   pid_output_right = pid_output;                                            //Copy the controller output to the pid_output_right variable for the right motor
 
@@ -219,25 +275,25 @@ void loop(){
   if(received_byte & BOT_LEFT) {                                            //If the first bit of the receive byte is set change the left and right variable to turn the robot to the left
     pid_output_left += turning_speed;                                       //Increase the left motor speed
     pid_output_right -= turning_speed;                                      //Decrease the right motor speed
-    Serial.println("Turning Left");
+    DEBUG_PRINT("Turning Left");
   }
   // Turn Right
   if(received_byte & BOT_RIGHT) {                                           //If the second bit of the receive byte is set change the left and right variable to turn the robot to the right
     pid_output_left -= turning_speed;                                       //Decrease the left motor speed
     pid_output_right += turning_speed;                                      //Increase the right motor speed
-    Serial.println("Turning Right");
+    DEBUG_PRINT("Turning Right");
   }
   // Move Forward
   if(received_byte & BOT_FORWARD) {                                         //If the third bit of the receive byte is set change the left and right variable to turn the robot to the right
     if(pid_setpoint > -2.5)pid_setpoint -= 0.05;                            //Slowly change the setpoint angle so the robot starts leaning forewards
     if(pid_output > max_target_speed * -1)pid_setpoint -= 0.005;            //Slowly change the setpoint angle so the robot starts leaning forewards
-    Serial.println("Go Forward");
+    DEBUG_PRINT("Go Forward");
   }
   // Move Backward
   if(received_byte & BOT_REVERSE) {                                         //If the forth bit of the receive byte is set change the left and right variable to turn the robot to the right
     if(pid_setpoint < 2.5)pid_setpoint += 0.05;                             //Slowly change the setpoint angle so the robot starts leaning backwards
     if(pid_output < max_target_speed)pid_setpoint += 0.005;                 //Slowly change the setpoint angle so the robot starts leaning backwards
-    Serial.println("Go Backward");
+    DEBUG_PRINT("Go Backward");
   }   
   // No motion - slowly return to stable/vertical
   if(!(received_byte & BOT_STABLE)) {                                       //Slowly reduce the setpoint to zero if no foreward or backward command is given
@@ -250,11 +306,16 @@ void loop(){
   if(pid_setpoint == 0) {                                                   //If the setpoint is zero degrees
     if(pid_output < 0)self_balance_pid_setpoint += 0.0015;                  //Increase the self_balance_pid_setpoint if the robot is still moving forewards
     if(pid_output > 0)self_balance_pid_setpoint -= 0.0015;                  //Decrease the self_balance_pid_setpoint if the robot is still moving backwards
-  }
+  }  
+}
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //Motor pulse calculations
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+/// \brief Calculates motor pulse outputs from the pid output 
+///
+/// \return void 
+///////////////////////////////////////////////////////////////////////////////
+///      >>>>>>>>>>>>>>>>>>>>>>>UPDATE<<<<<<<<<<<<<<<<<<<<<<<<<<<
+void motor_pulse_calculations() {
   //To compensate for the non-linear behaviour of the stepper motors the folowing calculations are needed to get a linear speed behaviour.
   if(pid_output_left > 0)
     pid_output_left = 405 - (1/(pid_output_left + 9)) * 5500;
@@ -281,20 +342,19 @@ void loop(){
 
   //Copy the pulse time to the throttle variables so the interrupt subroutine can use them
   throttle_left_motor = left_motor;
-  throttle_right_motor = right_motor;
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //Loop time timer
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //The angle calculations are tuned for a loop time of 4 milliseconds. To make sure every loop is exactly 4 milliseconds a wait loop
-  //is created by setting the loop_timer variable to +4000 microseconds every loop.
-  while(loop_timer > micros());
-  loop_timer += 4000;
+  throttle_right_motor = right_motor;  
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Interrupt routine  TIMER2_COMPA_vect
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// >>>>>> Initialization routines <<<<<<<<<<
+
+///////////////////////////////////////////////////////////////////////////////
+/// \brief TIMER2 interrupt handler used to update the stepper motor control lines
+///
+/// \return void
+///////////////////////////////////////////////////////////////////////////////
 ISR(TIMER2_COMPA_vect){
   //Left motor pulse calculations
   throttle_counter_left_motor ++;                                           //Increase the throttle_counter_left_motor variable by 1 every time this routine is executed
@@ -325,41 +385,24 @@ ISR(TIMER2_COMPA_vect){
   else if(throttle_counter_right_motor == 2)PORTD &= 0b11101111;            //Set output 4 low because the pulse only has to last for 20us
 }
 
-void initialize_radio() {
-  radio.begin();                                                            //Start the SPI nRF24L01 radio
-  radio.openReadingPipe(1,radio_address);                                   // Open a reading pipe on the radio
-  radio.startListening();
-}
   
+///////////////////////////////////////////////////////////////////////////////
+/// \brief initializes the I2C bus, including a short delay to let the link settle.
+///
+/// \return void
+///////////////////////////////////////////////////////////////////////////////
 void initialize_I2C() {
-  Wire.begin();                                                             //Start the I2C bus as master
-  //TWBR = 12;                                                                //Set the I2C clock speed to 400kHz
-  delay(20);                                                                //Short delay
+  Wire.begin();
+  //TWBR = 12;                                                                
+  delay(20);
 }
 
-void wake_gyro() {
-  //By default the MPU-6050 sleeps. So we have to wake it up.
-  Wire.beginTransmission(gyro_address);                                     //Start communication with the address found during search.
-  Wire.write(0x6B);                                                         //We want to write to the PWR_MGMT_1 register (6B hex)
-  Wire.write(0x00);                                                         //Set the register bits as 00000000 to activate the gyro
-  Wire.endTransmission();                                                   //End the transmission with the gyro.
-  //Set the full scale of the gyro to +/- 250 degrees per second
-  Wire.beginTransmission(gyro_address);                                     //Start communication with the address found during search.
-  Wire.write(0x1B);                                                         //We want to write to the GYRO_CONFIG register (1B hex)
-  Wire.write(0x00);                                                         //Set the register bits as 00000000 (250dps full scale)
-  Wire.endTransmission();                                                   //End the transmission with the gyro
-  //Set the full scale of the accelerometer to +/- 4g.
-  Wire.beginTransmission(gyro_address);                                     //Start communication with the address found during search.
-  Wire.write(0x1C);                                                         //We want to write to the ACCEL_CONFIG register (1A hex)
-  Wire.write(0x08);                                                         //Set the register bits as 00001000 (+/- 4g full scale range)
-  Wire.endTransmission();                                                   //End the transmission with the gyro
-  //Set some filtering to improve the raw data.
-  Wire.beginTransmission(gyro_address);                                     //Start communication with the address found during search
-  Wire.write(0x1A);                                                         //We want to write to the CONFIG register (1A hex)
-  Wire.write(0x03);                                                         //Set the register bits as 00000011 (Set Digital Low Pass Filter to ~43Hz)
-  Wire.endTransmission();                                                   //End the transmission with the gyro 
-}
 
+///////////////////////////////////////////////////////////////////////////////
+/// \brief Initialize a 20us interrupt based on TIMER2
+///
+/// \return void
+///////////////////////////////////////////////////////////////////////////////
 void initialize_timer(){
   //To create a variable pulse for controlling the stepper motors a timer is created that will execute a piece of code (subroutine) every 20us
   //This subroutine is called TIMER2_COMPA_vect
@@ -371,71 +414,15 @@ void initialize_timer(){
   TCCR2A |= (1 << WGM21);                                                   //Set counter 2 to CTC (clear timer on compare) mode
 }
 
-void calibrate_gyro() {
-  pinMode(13, OUTPUT);                                                      //Configure digital port 6 as output
-  for(receive_counter = 0; receive_counter < 500; receive_counter++){       //Create 500 loops
-    if(receive_counter % 15 == 0)digitalWrite(13, !digitalRead(13));        //Change the state of the LED every 15 loops to make the LED blink fast
-    Wire.beginTransmission(gyro_address);                                   //Start communication with the gyro
-    Wire.write(0x43);                                                       //Start reading the Who_am_I register 75h
-    Wire.endTransmission();                                                 //End the transmission
-    Wire.requestFrom(gyro_address, 4);                                      //Request 2 bytes from the gyro
-    gyro_yaw_calibration_value += Wire.read()<<8|Wire.read();               //Combine the two bytes to make one integer
-    gyro_pitch_calibration_value += Wire.read()<<8|Wire.read();             //Combine the two bytes to make one integer
-    delayMicroseconds(3700);                                                //Wait for 3700 microseconds to simulate the main program loop time
-  }
-  gyro_pitch_calibration_value /= 500;                                      //Divide the total value by 500 to get the avarage gyro offset
-  gyro_yaw_calibration_value /= 500;                                        //Divide the total value by 500 to get the avarage gyro offset
-}
 
-void check_battery_voltage(){
-  //Load the battery voltage to the battery_voltage variable.
-  //85 is the voltage compensation for the diode.
-  //Resistor voltage divider => (3.3k + 2.2k)/2.2k = 2.5
-  //12.5V equals ~5V @ Analog 0.
-  //12.5V equals 1023 analogRead(0).
-  //1250 / 1023 = 1.222.
-  //The variable battery_voltage holds 1050 if the battery voltage is 10.5V.
-  battery_voltage = (analogRead(0) * 1.222) + 85;
-  
-  if(battery_voltage < 1050 && battery_voltage > 800){                      //If batteryvoltage is below 10.5V and higher than 8.0V
-    digitalWrite(13, HIGH);                                                 //Turn on the led if battery voltage is to low
-    low_bat = 1;                                                            //Set the low_bat variable to 1
-  }
-}
-
-void retrieve_gyro_acceleration(){
-  // This function retrieves the "Z" acceleration from gyro registers 0x3F through 0x40
-  // Note that the orientation of the gyro when the bot is vertical places the gyros "z" axis horizontal to the floor/ground
-  // Having initialized the gyro to +/-4g mode, the returned values will range from +/- 8192
-  Wire.beginTransmission(gyro_address);                                     //Start communication with the gyro
-  Wire.write(0x3F);                                                         //Start reading at register 3F
-  Wire.endTransmission();                                                   //End the transmission
-  Wire.requestFrom(gyro_address, 2);                                        //Request 2 bytes from the gyro
-  accelerometer_data_raw = (Wire.read()<<8)|Wire.read();                      //Combine the two bytes to make one integer
-  accelerometer_data_raw += acc_calibration_value;                          //Add the accelerometer calibration value
-  if(accelerometer_data_raw > 8200)accelerometer_data_raw = 8200;           //Prevent division by zero by limiting the acc data to +/-8200;
-  if(accelerometer_data_raw < -8200)accelerometer_data_raw = -8200;         //Prevent division by zero by limiting the acc data to +/-8200;
-}
-
-void retrieve_gyro_pitch_and_yaw(){
-  // This function retrieves the gyroscope measurements for the "x" and "y" axes
-  // seems like the "x" axis corresponds to the yaw and the "y" axis corresponds to the pitch
-  // Note that the orientation of the gyro when the bot is vertical places the gyros "y" axis vertical wrt the floor/ground
-  // Note that the orientation of the gyro when the bot is vertical places the gyros "x" axis out the left side of the bot
-  // Having initialized the gyro to +/- 250deg/sec mode, the returned values will range from +/- 131
-  Wire.beginTransmission(gyro_address);                                     //Start communication with the gyro
-  Wire.write(0x43);                                                         //Start reading at register 0x43
-  Wire.endTransmission();                                                   //End the transmission
-  Wire.requestFrom(gyro_address, 4);                                        //Request 4 bytes from the gyro
-  gyro_yaw_data_raw = (Wire.read()<<8)|Wire.read();                           //Combine the two bytes to make one integer
-  gyro_yaw_data_raw -= gyro_yaw_calibration_value;                          //Add the gyro calibration value
-  gyro_pitch_data_raw = (Wire.read()<<8)|Wire.read();                         //Combine the two bytes to make one integer
-  gyro_pitch_data_raw -= gyro_pitch_calibration_value;                      //Add the gyro calibration value
-}
-
-void initialize_serial(){
-  Serial.begin(9600);                                               //Start the serial port at 9600 kbps
-  printf_begin();
+///////////////////////////////////////////////////////////////////////////////
+/// \brief Initialize serial port to 9600 baud. 
+///
+/// \return void
+///////////////////////////////////////////////////////////////////////////////
+void initialize_serial(int baudRate){
+  Serial.begin(baudRate);                                               //Start the serial port at 9600 kbps
+  //printf_begin();
 }
 
 

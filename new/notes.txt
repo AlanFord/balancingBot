@@ -1,0 +1,8 @@
+Changes from the original design:
+1) Using SPI to communicate with the wireless card.  This will require use of arduino
+	pins D10, D11, D12, and D13.
+2) Need to solder up another LED.  The on-board LED is attached to the ATMEGA328 pin 17 
+	(PB5) (SCK), which is wired to pin 9 of JP6.  This appears to be labeled on the 
+	Arduino Pro Mini board as D13.
+3) The voltage divider was redone, so the constants in the code should be altered.
+4) Serial to the PC may be available since the wireless link isn't using it.

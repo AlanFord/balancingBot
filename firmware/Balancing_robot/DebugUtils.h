@@ -1,3 +1,7 @@
+/////////////////////////////////////////////////////////////////////////////////////
+/// \file DebugUtils.h
+/// \brief debug serial printing header file
+/////////////////////////////////////////////////////////////////////////////////////
 
 /*
 DebugUtils.h - Simple debugging utilities.
@@ -7,8 +11,8 @@ http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1271517197
 
 */
 
-#ifndef DEBUGUTILS_H
-#define DEBUGUTILS_H
+#ifndef __DEBUGUTILS_H__
+#define __DEBUGUTILS_H__
 
 #ifdef DEBUG
 
@@ -28,5 +32,5 @@ http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1271517197
 #define DEBUG_PRINT(str)
 #endif
 
-#endif
+#endif  // __DEBUGUTILS_H__
 

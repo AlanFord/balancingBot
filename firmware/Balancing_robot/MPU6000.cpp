@@ -1,6 +1,16 @@
+/////////////////////////////////////////////////////////////////////////////////////
+/// \file MPU6000.cpp
+/// \brief functions for managing the MPU6050 gyro
+///
+/////////////////////////////////////////////////////////////////////////////////////
+
+#include "MPU6000.h"
+#include "DebugUtils.h"
+
 static long gyro_yaw_calibration_value;
 static long gyro_pitch_calibration_value;
 static int acc_calibration_value = -600;
+static float angle_gyro;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8,8 +18,6 @@ static int acc_calibration_value = -600;
 /// initial samples.
 ///
 /// \param[in] gyro_address I2C address of the gyro
-/// \param[out] gyro_pitch_calibration_value 
-/// \param[out] gyro_yaw_calibration_value
 /// \return void
 ///////////////////////////////////////////////////////////////////////////////
 void calibrate_gyro(int gyro_address) {
@@ -110,6 +118,25 @@ int retrieve_gyro_acceleration(int gyro_address){
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+/// \brief initializes the bot angle if close to vertical
+///
+/// \param[in] gyro_address I2C address of the gyro
+/// \return boolean true if bot is close to vertical
+///////////////////////////////////////////////////////////////////////////////
+bool initialize_angle(int gyro_address){
+  float angle_acc;
+  int accelerometer_data_raw;
+  //Angle calculations
+  accelerometer_data_raw = retrieve_gyro_acceleration(gyro_address);        //acc data is limited to +/-8200
+  angle_acc = asin((float)accelerometer_data_raw/8200.0)* DEGREEPERRADIAN;  //Calculate the current angle in degrees [-90,+90] according to the accelerometer
+  if(angle_acc > -0.5&& angle_acc < 0.5){                                   //If the accelerometer angle is almost 0
+    angle_gyro = angle_acc;                                                 //Load the accelerometer angle in the angle_gyro variable
+    return true;
+  }
+  return false;  
+}
+
+///////////////////////////////////////////////////////////////////////////////
 /// \brief Calculates the tilt angle from the accelerometer and the gyro 
 /// nRF24L01 radio. 
 ///
@@ -118,16 +145,11 @@ int retrieve_gyro_acceleration(int gyro_address){
 ///////////////////////////////////////////////////////////////////////////////
 ///      >>>>>>>>>>>>>>>>>>>>>>>UPDATE<<<<<<<<<<<<<<<<<<<<<<<<<<<
 float get_angle_gyro(int gyro_address) {
-  const float angle_gyro;
   float angle_acc;
   int accelerometer_data_raw, gyro_pitch_data_raw, gyro_yaw_data_raw;
   //Angle calculations
   accelerometer_data_raw = retrieve_gyro_acceleration(gyro_address);                        //acc data is limited to +/-8200
   angle_acc = asin((float)accelerometer_data_raw/8200.0)* DEGREEPERRADIAN;  //Calculate the current angle in degrees [-90,+90] according to the accelerometer
-  if(start == 0 && angle_acc > -0.5&& angle_acc < 0.5){                     //If the accelerometer angle is almost 0
-    angle_gyro = angle_acc;                                                 //Load the accelerometer angle in the angle_gyro variable
-    start = 1;                                                              //Set the start variable to start the PID controller
-  }
   DEBUG_PRINT("raw data is " + accelerometer_data_raw);
   DEBUG_PRINT(String("Angle is ").concat(angle_acc));
   retrieve_gyro_pitch_and_yaw(gyro_address, gyro_pitch_data_raw, gyro_yaw_data_raw);

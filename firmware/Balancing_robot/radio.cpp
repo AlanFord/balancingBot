@@ -1,6 +1,11 @@
+/////////////////////////////////////////////////////////////////////////////////////
+/// \file radio.cpp
+/// \brief Control functions for the SPI nRF24L01 radio
+///
+/////////////////////////////////////////////////////////////////////////////////////
 
-
-#include "RF24.h"   //Don't know where this is coming from, but it's for the radio
+#include "radio.h"
+#include "RF24.h"   //from the RF24 Arduino library
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -13,7 +18,7 @@ RF24 radio(9,10);
 ///////////////////////////////////////////////////////////////////////////////
 /// \brief initializes the RF24 radio transceiver over the SPI bus
 ///
-/// \param[in] SPI address of radio
+/// \param[in] radio_address - SPI address of radio
 /// \return void
 ///////////////////////////////////////////////////////////////////////////////
 void initialize_radio(byte radio_address) {
@@ -26,7 +31,7 @@ void initialize_radio(byte radio_address) {
 /// \brief Retrieves a radio command from the wii nunchuck over the 
 /// nRF24L01 radio. 
 ///
-/// \return radio data from the wii nunchuck 
+/// \return radio data from the wii nunchuck
 ///////////////////////////////////////////////////////////////////////////////
 byte get_radio_data(void) {
   static byte received_byte;

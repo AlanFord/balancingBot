@@ -112,9 +112,9 @@ void setup(){
     Wire.beginTransmission(gyro_address);                                   //Start communication with the gyro
     Wire.write(0x43);                                                       //Start reading the Who_am_I register 75h
     Wire.endTransmission();                                                 //End the transmission
-    Wire.requestFrom(gyro_address, 4);                                      //Request 2 bytes from the gyro
-    gyro_yaw_calibration_value += Wire.read()<<8|Wire.read();               //Combine the two bytes to make one integer
-    gyro_pitch_calibration_value += Wire.read()<<8|Wire.read();             //Combine the two bytes to make one integer
+    Wire.requestFrom(gyro_address, 4);                                      //Request 4 bytes from the gyro
+    gyro_yaw_calibration_value += Wire.read()<<8|Wire.read();               //Combine two bytes to make one integer
+    gyro_pitch_calibration_value += Wire.read()<<8|Wire.read();             //Combine two bytes to make one integer
     delayMicroseconds(3700);                                                //Wait for 3700 microseconds to simulate the main program loop time
   }
   gyro_pitch_calibration_value /= 500;                                      //Divide the total value by 500 to get the avarage gyro offset
@@ -146,7 +146,7 @@ void loop(){
   
   //Load the battery voltage to the battery_voltage variable.
   //85 is the voltage compensation for the diode.
-  //Resistor voltage divider => (3.3k + 3.3k)/2.2k = 2.5
+  //Resistor voltage divider => (3.3k + 2.2k)/2.2k = 2.5
   //12.5V equals ~5V @ Analog 0.
   //12.5V equals 1023 analogRead(0).
   //1250 / 1023 = 1.222.
@@ -170,6 +170,7 @@ void loop(){
   if(accelerometer_data_raw > 8200)accelerometer_data_raw = 8200;           //Prevent division by zero by limiting the acc data to +/-8200;
   if(accelerometer_data_raw < -8200)accelerometer_data_raw = -8200;         //Prevent division by zero by limiting the acc data to +/-8200;
 
+  // note: 57.296 is degrees/radian
   angle_acc = asin((float)accelerometer_data_raw/8200.0)* 57.296;           //Calculate the current angle according to the accelerometer
 
   if(start == 0 && angle_acc > -0.5&& angle_acc < 0.5){                     //If the accelerometer angle is almost 0
@@ -185,7 +186,8 @@ void loop(){
   gyro_pitch_data_raw = Wire.read()<<8|Wire.read();                         //Combine the two bytes to make one integer
   
   gyro_pitch_data_raw -= gyro_pitch_calibration_value;                      //Add the gyro calibration value
-  angle_gyro += gyro_pitch_data_raw * 0.000031;                             //Calculate the traveled during this loop angle and add this to the angle_gyro variable
+  // 1/(250 cycles/sec)(131 LSB/deg/sec)] = 0.0000305 deg/cycle/LSB
+  angle_gyro += gyro_pitch_data_raw * 0.0000305;                             //Calculate the traveled during this loop angle and add this to the angle_gyro variable
   
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //MPU-6050 offset compensation
@@ -204,7 +206,7 @@ void loop(){
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //PID controller calculations
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //The balancing robot is angle driven. First the difference between the desired angel (setpoint) and actual angle (process value)
+  //The balancing robot is angle driven. First the difference between the desired angle (setpoint) and actual angle (process value)
   //is calculated. The self_balance_pid_setpoint variable is automatically changed to make sure that the robot stays balanced all the time.
   //The (pid_setpoint - pid_output * 0.015) part functions as a brake function.
   pid_error_temp = angle_gyro - self_balance_pid_setpoint - pid_setpoint;
@@ -244,11 +246,11 @@ void loop(){
     pid_output_right += turning_speed;                                      //Increase the right motor speed
   }
 
-  if(received_byte & B00000100){                                            //If the third bit of the receive byte is set change the left and right variable to turn the robot to the right
+  if(received_byte & B00000100){                                            //If the third bit of the receive byte is set change the left and right variable to move the robot forward
     if(pid_setpoint > -2.5)pid_setpoint -= 0.05;                            //Slowly change the setpoint angle so the robot starts leaning forewards
     if(pid_output > max_target_speed * -1)pid_setpoint -= 0.005;            //Slowly change the setpoint angle so the robot starts leaning forewards
   }
-  if(received_byte & B00001000){                                            //If the forth bit of the receive byte is set change the left and right variable to turn the robot to the right
+  if(received_byte & B00001000){                                            //If the forth bit of the receive byte is set change the left and right variable to move the robot backward
     if(pid_setpoint < 2.5)pid_setpoint += 0.05;                             //Slowly change the setpoint angle so the robot starts leaning backwards
     if(pid_output < max_target_speed)pid_setpoint += 0.005;                 //Slowly change the setpoint angle so the robot starts leaning backwards
   }   

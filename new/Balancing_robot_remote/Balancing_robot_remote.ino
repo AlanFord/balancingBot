@@ -1,4 +1,3 @@
-// TODO:  check if CC should be 5V or 3V for the Radio
 // TODO:  why read 6 bytes from the nunchuck when 4 will do?
 // TODO:  do we really need to set TWBR when initallizing I2C?  The library seems to do it already.
 // TODO:  implement BOT_STABLE
@@ -10,7 +9,7 @@
 // A4                           SDA (yellow)
 // A5                           SCL (white)
 // GND                          GND (red)
-// +5V                          VCC (green)
+// +3.3V                        VCC (green)
 //
 // Arduino                      Radio
 // D9                           CE
@@ -18,7 +17,7 @@
 // D11                          MOSI
 // D12                          MISO
 // D13                          SCK
-// +3.3V                        VCC  (or is it 5V??)
+// +5V                          VCC
 // GND                          GND
 //
 ///////////////////////////////////////////////////////////////////////////////////////

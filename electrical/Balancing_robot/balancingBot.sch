@@ -198,17 +198,6 @@ Text Notes 845  1260 0    60   ~ 0
 SPI 2.5 GHz Wireless
 Text Notes 9245 3615 0    60   ~ 0
 5V 1A
-$Comp
-L +5V #PWR07
-U 1 1 5955B40F
-P 2175 1425
-F 0 "#PWR07" H 2175 1275 50  0001 C CNN
-F 1 "+5V" H 2175 1565 50  0000 C CNN
-F 2 "" H 2175 1425 50  0000 C CNN
-F 3 "" H 2175 1425 50  0000 C CNN
-	1    2175 1425
-	1    0    0    -1  
-$EndComp
 Text GLabel 3880 3640 2    60   Input ~ 0
 11.75V
 $Comp
@@ -390,7 +379,6 @@ MOSI
 Text Label 4105 2105 0    60   ~ 0
 MISO
 NoConn ~ 2795 2225
-NoConn ~ 2795 2315
 Text Label 1850 1625 0    60   ~ 0
 CSN
 Text Label 4105 2315 0    60   ~ 0
@@ -502,10 +490,6 @@ Wire Wire Line
 	3120 6210 3125 6720
 Wire Wire Line
 	3125 7250 3125 7355
-Wire Wire Line
-	1850 1515 2175 1515
-Wire Wire Line
-	2175 1515 2175 1425
 Wire Wire Line
 	3125 6870 3905 6870
 Wire Wire Line
@@ -869,4 +853,8 @@ Wire Wire Line
 	4665 1665 4665 935 
 Wire Wire Line
 	4665 935  5005 935 
+Text Label 2795 2315 2    60   ~ 0
+CE
+Text Label 1850 1515 0    60   ~ 0
+CE
 $EndSCHEMATC

@@ -80,29 +80,6 @@ F 3 "" H 1845 3990 50  0000 C CNN
 $EndComp
 Text Notes 1970 3460 0    60   ~ 0
 SPI 2.5 GHz Wireless
-$Comp
-L +5V #PWR3
-U 1 1 5955B40F
-P 3300 3625
-F 0 "#PWR3" H 3300 3475 50  0001 C CNN
-F 1 "+5V" H 3300 3765 50  0000 C CNN
-F 2 "" H 3300 3625 50  0000 C CNN
-F 3 "" H 3300 3625 50  0000 C CNN
-	1    3300 3625
-	1    0    0    -1  
-$EndComp
-$Comp
-L R_Small R1
-U 1 1 5955CF79
-P 3145 3715
-F 0 "R1" H 3175 3735 50  0000 L CNN
-F 1 "0R" H 3175 3675 50  0000 L CNN
-F 2 "Resistors_SMD:R_0805_HandSoldering" H 3145 3715 50  0001 C CNN
-F 3 "" H 3145 3715 50  0000 C CNN
-F 4 "Value" H 3145 3715 60  0001 C CNN "Fieldname"
-	1    3145 3715
-	0    -1   -1   0   
-$EndComp
 Wire Wire Line
 	1845 3990 1845 3915
 Wire Wire Line
@@ -111,12 +88,6 @@ Wire Wire Line
 	1835 3710 1835 3755
 Wire Wire Line
 	1835 3755 1935 3755
-Wire Wire Line
-	3045 3715 2975 3715
-Wire Wire Line
-	3300 3625 3300 3715
-Wire Wire Line
-	3300 3715 3245 3715
 Text Label 7425 4275 2    60   ~ 0
 SCL
 Text Label 7425 4135 2    60   ~ 0
@@ -153,7 +124,6 @@ F 3 "" H 5245 3945 60  0001 C CNN
 	1    5245 3945
 	1    0    0    -1  
 $EndComp
-NoConn ~ 6195 3745
 NoConn ~ 6195 3845
 NoConn ~ 6195 4045
 NoConn ~ 6195 4145
@@ -278,4 +248,8 @@ Text Notes 7960 4465 0    50   ~ 0
 Red wire
 Text Notes 7960 4625 0    50   ~ 0
 Green wire
+Text Label 6195 3745 0    60   ~ 0
+CE
+Text Label 2975 3715 0    60   ~ 0
+CE
 $EndSCHEMATC

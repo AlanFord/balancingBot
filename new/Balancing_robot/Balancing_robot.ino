@@ -10,12 +10,8 @@
 //THE SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////
 
-//#define SERIALCOMM
-#define SPICOMM
-
 #include <Wire.h>                                            //Include the Wire.h library so we can communicate with the gyro
 
-#ifdef SPICOMM
 #include "RF24.h"   //from the RF24 Arduino library
 ///////////////////////////////////////////////////////////////////////////////////////
 // User Config For the Radio
@@ -23,7 +19,6 @@
 RF24 radio(9,10);
 ///////////////////////////////////////////////////////////////////////////////////////
 static byte radio_address[] = "1robt";
-#endif
 
 int gyro_address = 0x68;                                     //MPU-6050 I2C address (0x68 or 0x69)
 int acc_calibration_value = -503;                            //Enter the accelerometer calibration value
@@ -66,14 +61,9 @@ const uint8_t RIGHTMOTORSTEP   = (0b00000001 << 2);
 //Setup basic functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup(){
-  #ifdef SERIALCOMM
-  Serial.begin(9600);                                                       //Start the serial port at 9600 kbps
-  #endif
-  #ifdef SPICOMM
   radio.begin();                                                            //Start the SPI nRF24L01 radio
   radio.openReadingPipe(1,radio_address);                                   // Open a reading pipe on the radio
   radio.startListening();
-  #endif
   Wire.begin();                                                             //Start the I2C bus as master
   TWBR = 12;                                                                //Set the I2C clock speed to 400kHz
 
@@ -134,19 +124,11 @@ void setup(){
 //Main program loop
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void loop(){
-  #ifdef SERIALCOMM
-  if(Serial.available()){                                                   //If there is serial data available
-    received_byte = Serial.read();                                          //Load the received serial data in the received_byte variable
-    receive_counter = 0;                                                    //Reset the receive_counter variable
-  }
-  #endif
-  #ifdef SPICOMM
   // receive data from the radio (i.e. from the remote controller)
   if(radio.available()){
     radio.read(&received_byte,sizeof(received_byte));
     receive_counter = 0;                                                    //Reset the receive_counter variable
   }
-  #endif
   if(receive_counter <= 25)receive_counter ++;                              //The received byte will be valid for 25 program loops (100 milliseconds)
   else received_byte = 0x00;                                                //After 100 milliseconds the received byte is deleted
   

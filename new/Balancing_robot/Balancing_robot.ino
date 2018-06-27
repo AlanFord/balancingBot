@@ -10,6 +10,8 @@
 //THE SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////
 
+#define BR_DEBUG
+
 #include <Wire.h>                                            //Include the Wire.h library so we can communicate with the gyro
 
 #include "RF24.h"   //from the RF24 Arduino library
@@ -140,6 +142,10 @@ void loop(){
   //1250 / 1023 = 1.222.
   //The variable battery_voltage holds 1050 if the battery voltage is 10.5V.
   battery_voltage = (analogRead(0) * 12.4) + 850;
+  #ifdef BR_DEBUG
+  Serial.print(F("battery_voltage = "));
+  Serial.println(battery_voltage);
+  #endif
   
   if(battery_voltage < 10500 && battery_voltage > 8000){                      //If batteryvoltage is below 10.5V and higher than 8.0V
     digitalWrite(LED_PIN, HIGH);                                                 //Turn on the led if battery voltage is to low

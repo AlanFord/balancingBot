@@ -118,6 +118,9 @@ void initialize_serial(){
 
 void initialize_I2C() {
   Wire.begin();                                                             //Start the I2C bus as master
+  //  disable the on-chip pull-ups and rely on the nunchuk pull-ups
+  digitalWrite(SCL, LOW);
+  digitalWrite(SDA, LOW);
   //TWBR = 12;                                                                //Set the I2C clock speed to 400kHz
   delay(20);                                                                //Short delay
 }

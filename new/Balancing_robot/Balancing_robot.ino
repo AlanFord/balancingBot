@@ -10,7 +10,7 @@
 //THE SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#define BR_DEBUG
+// #define BR_DEBUG
 
 #include <Wire.h>                                            //Include the Wire.h library so we can communicate with the gyro
 
@@ -63,6 +63,9 @@ const uint8_t RIGHTMOTORSTEP   = (0b00000001 << 2);
 //Setup basic functions
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup(){
+  #ifdef BR_DEBUG
+  Serial.begin(9600);
+  #endif
   radio.begin();                                                            //Start the SPI nRF24L01 radio
   radio.openReadingPipe(1,radio_address);                                   // Open a reading pipe on the radio
   radio.startListening();
@@ -135,13 +138,15 @@ void loop(){
   else received_byte = 0x00;                                                //After 100 milliseconds the received byte is deleted
   
   //Load the battery voltage to the battery_voltage variable.
-  //85 is the voltage compensation for the diode.
-  //Resistor voltage divider => (3.3k + 2.2k)/2.2k = 2.5
-  //12.5V equals ~5V @ Analog 0.
-  //12.5V equals 1023 analogRead(0).
-  //1250 / 1023 = 1.222.
+  //850 is the voltage compensation for the diode.
+  //Resistor voltage divider => (3.3k + 2.15k)/2.15k = 2.5349
+  //12.674V equals ~5V @ Analog 0.
+  //12.472V equals 4.92V @ Analog 0.
+  //12472 / 1023 =
+  //12.674V equals 1023 analogRead(0).
+  //12674 / 1023 = 12.192.
   //The variable battery_voltage holds 1050 if the battery voltage is 10.5V.
-  battery_voltage = (analogRead(0) * 12.4) + 850;
+  battery_voltage = (analogRead(0) * 12.192) + 850;
   #ifdef BR_DEBUG
   Serial.print(F("battery_voltage = "));
   Serial.println(battery_voltage);

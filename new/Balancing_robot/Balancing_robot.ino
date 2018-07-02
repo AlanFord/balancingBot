@@ -146,7 +146,7 @@ void loop(){
   //12.674V equals 1023 analogRead(0).
   //12674 / 1023 = 12.192.
   //The variable battery_voltage holds 1050 if the battery voltage is 10.5V.
-  battery_voltage = (analogRead(0) * 12.192) + 850;
+  battery_voltage = (analogRead(0) * 12.191) + 850;
   #ifdef BR_DEBUG
   Serial.print(F("battery_voltage = "));
   Serial.println(battery_voltage);

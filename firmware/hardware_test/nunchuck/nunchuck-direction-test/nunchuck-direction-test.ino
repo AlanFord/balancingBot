@@ -140,7 +140,7 @@ void loop()
       else if (y > HIGH_DEADZONE) {
         Serial.println("Forward");        
       }
-      delay(1000);      
+      delay(250);      
     }
   }
   else Serial.println("No Nunchuck device found at address 0x52");

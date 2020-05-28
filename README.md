@@ -69,11 +69,11 @@ Initializing the radio requires using a “pipe” address, or name. We need to 
 Communicating with the nunchuck consists of sending 0x00 to the nunchuck followed by a request for six bytes of data.  The first byte of data received represents the left/right position of the joystick, with the values varying from 0 to 255 (full left to full right).  The second byte of data received represents the front/back position of the joystick, with values varying from 0 to 255 (full reverse to full forward).  Ignoring a dead zone of 80 to 170 (to avoid jitter and noise), the nunchuck data is converted to robot commands of BOT_LEFT, BOT_RIGHT, BOT_FORWARD, and BOT_REVERSE.  The commands are represented by the following byte encoding:
 
 ```
-BOT_LEFT    		B00000001
-BOT_RIGHT   		B00000010
-BOT_FORWARD 		B00000100
-BOT_REVERSE 		B00001000
-BOT_STABLE			B00001100
+BOT_LEFT            B00000001
+BOT_RIGHT           B00000010
+BOT_FORWARD         B00000100
+BOT_REVERSE         B00001000
+BOT_STABLE          B00001100
 ```
 
 The values can be combined by ORing the bytes together.  For example, to move forward and turn right simultaneously the values of BOT_FORWARD and BOT_RIGHT would be ORed together to form a command byte of B00000110.
@@ -123,7 +123,7 @@ Additionally, the \~ENABLE pin should be raised to the logic power supply voltag
 can be used to control microstepping as follows:
 
 | MS1  | MS2  | MS3  | Microstep Resolution |
-| ==== | ---- | ---- | -------------------- |
+| ---- | ---- | ---- | -------------------- |
 | Low  | Low  | Low  | Full step            |
 | High | Low  | Low  | Half step            |
 | Low  | High | Low  | 1/4 step             |
@@ -136,11 +136,12 @@ The motor drivers used in the robot are wired as follows:
 
 Only MS2 is High, so the microstepping is set to ¼ step.  The \~ENABLE line is not connected; hence the stepper driver is always enabled.  The STEP and DIR pins are connected to the following Arduino Pro Mini pins:
 
-|            | Arduino Connections      |
-| ---------- | ------------------------ |
-| Driver Pin | Left Motor | Right Motor |
-| STEP       |	D4        | D2          |
-| DIR        |	D5        | D3          |
+|            | Arduino Pins | Arduino Pins |
+|            | for          | for          |
+| Driver Pin | Left Motor   | Right Motor  |
+| ---------- | ------------ | ------------ |
+| STEP       |	D4          | D2           |
+| DIR        |	D5          | D3           |
 
 #### Balancing
 Balancing of the robot is performed by monitoring the gyro/accelerometer.  The gyro/accelerometer is implemented using a MPU-6050 six-axis sensor on a GY-521 breakout board.  The GY-521 communicates over I2C and can be powered with between 3.3V and 5V.
@@ -207,9 +208,9 @@ voltage reading = (A0+68.57)/80.67*1000 = A0*12.4 + 850
 If the voltage reading drops below 10500 (+10.5V) the LED is turned on and the motors are de-energized.  The batter check is performed in the main loop of the Arduino software, executed on a 4 millisecond interval.
 
 #### Attitude Monitoring
-So why include both gyro and an accelerometer?  The gyro can determine the rate at which the robot is rotating (i.e. falling).  How is the gyro used to determine the angle of the robot?  The gyro’s value for rotation (/sec) is multiplied by the time since the last check to determine how much the robot’s angle has changed over that time.  But changed from what?  The gyro can’t determine what angle the robot started at.  This is where the accelerometer comes in.  When the robot is moved to an upright position, the accelerometer can tell from the gravitational pull how close the robot is to vertical.  Once the robot is close to vertical the angle calculated from the accelerometer is used to initialize the gyro’s ongoing, updated angle calculations.  Voila!
+So why include both gyro and an accelerometer?  The gyro can determine the rate at which the robot is rotating (i.e. falling).  How is the gyro used to determine the angle of the robot?  The gyro’s value for rotation (degree/sec) is multiplied by the time since the last check to determine how much the robot’s angle has changed over that time.  But changed from what?  The gyro can’t determine what angle the robot started at.  This is where the accelerometer comes in.  When the robot is moved to an upright position, the accelerometer can tell from the gravitational pull how close the robot is to vertical.  Once the robot is close to vertical the angle calculated from the accelerometer is used to initialize the gyro’s ongoing, updated angle calculations.  Voila!
 
-The gyro/accelerometer (henceforth referred to as the gyro) is initialized in the Arduino’s setup() function.  The gyro operating mode is set to 250/sec full scale for the gyro and +/- 4g full scale for the accelerometer.  Both the gyro and accelerometer functions return a signed 16-bit integer.  The accelerometer has a sensitivity of 8192 LSB/g.  The gyro has a sensitivity of 131 LSB//sec.
+The gyro/accelerometer (henceforth referred to as the gyro) is initialized in the Arduino’s setup() function.  The gyro operating mode is set to 250 degree/sec full scale for the gyro and +/- 4g full scale for the accelerometer.  Both the gyro and accelerometer functions return a signed 16-bit integer.  The accelerometer has a sensitivity of 8192 LSB/g.  The gyro has a sensitivity of 131 LSB/degree/sec.
 
 The gyro yaw and gyro pitch values are read from the gyro and then the program is paused for \~4 milliseconds.  This is repeated for a total of 500 times and the resulting yaw and pitch values are averaged over the 500 values.  The resulting average yaw and average pitch are the gyro calibration values.
 
@@ -225,7 +226,7 @@ Serial communications can be enabled at compile-time by defining the macro SERIA
 Motor control is not done in either of the normal Arduino functions setup() or loop().  Instead, motor control is performed in an interrupt handler.  The Arduino has built-in timers that can cause the microcontroller to perform operations on a repeating fixed interval.  One of the ways this can be done is to associate a special program (i.e. a function) with the timer.  Such a program/function is referred to as an interrupt handler.  The robot uses Timer 2 to perform motor control on an interval of every 20 microseconds.  The motor control is performed by a function called ISR(TIMER2_COMPA_vect).  Timer 2 is initialized in the standard Arduino setup() function.
 
 Moving the stepper motor by one step (or by a ¼ step in this configuration) a pulse is generated on the appropriate input pins for the stepper controllers.  This is done by pulsing Arduino Pro Mini pin D2 for the right motor and pin D4 for the left motor.
-Some caution is needed when controlling the direction of the stepper motors.  The stepper motors and drivers are configured symmetrically with respect to the Arduino Pro Mini.  However, the left motor is rotated 180 when mounted on the robot.  Thus, the right motor will go forward when Arduino pin D3 is high and reverse when pin D3 is low.  The left motor is reversed, going forward when Arduino pin D5 is low and reversing when pin D5 is high.
+Some caution is needed when controlling the direction of the stepper motors.  The stepper motors and drivers are configured symmetrically with respect to the Arduino Pro Mini.  However, the left motor is rotated 180 degrees when mounted on the robot.  Thus, the right motor will go forward when Arduino pin D3 is high and reverse when pin D3 is low.  The left motor is reversed, going forward when Arduino pin D5 is low and reversing when pin D5 is high.
 
 Manipulating the Arduino Port D pins for motor stepping and direction is made a little easier by the constants defined in the Arduino program:
 
@@ -244,7 +245,7 @@ The feedback calculations are designed to continuously update the motor position
 
  - Incorporate changes when the robot is to move forward or backward.  To move forward, the robot is leaned forward by adjusting pid_setpoint in 0.005 increments each time the main loop is executed (4 millisec) until the maximum speed `max_target_speed` (150) is reached.
 
-  - If the robot is more than 30 from vertical (i.e. it fell over), shut the motors down and reset the feedback calculations.
+  - If the robot is more than 30 degrees from vertical (i.e. it fell over), shut the motors down and reset the feedback calculations.
 
   - When the robot is not at the required angle from vertical, calculate a new.
 
@@ -289,4 +290,4 @@ If, during operation, the red LED turns on, the motors will de-energize because 
 [nunchuck-connector]:   ./docs/connector.jpeg      "Nunchuck connector wiring"
 [A4988]:                ./docs/basic.png           "A4988 diagram"
 [A4988-wiring]:         ./docs/a4988.jpeg          "A4988 wiring diagram"
-[power-supply]:         ./docs/power-supp.p.jpeg   "Power supply diagram"
+[power-supply]:         ./docs/power-supply.jpeg   "Power supply diagram"

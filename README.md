@@ -1,8 +1,8 @@
 # Balancing Bot
 The Balancing Bot is a battery-powered two-wheeled balancing robot that can move under remote control.  The robot is built primarily from off-the-shelf parts.  The frame is plywood, easily made with hand tools or a small CNC router.  The robot’s electronics are based on an Arduino microcontroller and a combination gyro/accelerometer.  Communications with the remote control are performed over a 2.4 GHz wireless transceiver module.  The remote control is comprised of a repurposed Wii-compatible nunchuck controller, an Arduino microcontroller, and a 2.4 GHz wireless transceiver module.
 
-This is a fork of the Joop Brokking's [balancing robot]
-(http://www.brokking.net/yabr_main.html).
+This is a fork of the Joop Brokking's 
+[balancing robot](http://www.brokking.net/yabr_main.html).
 Many parts have been replaced with easier-to-obtain (for me) breakout boards from sparkfun.com, pololu.com, and amazon.com.
 
 ## The Remote Control
@@ -10,8 +10,9 @@ The primary component of the remote control is the Wii-compatible nunchuck.  The
 
 Getting the maneuvering commands from the remote control to the robot is performed using a Nordic Semiconductor nRF24L01+ 2.4 GHz wireless transceiver.  The communications protocol is proprietary, but the transceiver is available on a Sparkfun breakout board and communication is handled via the SPI and RF24 libraries.
 
-Wiring the nunchuck to the Arduino can be plug-and-play if you use one of the various Wii nunchuck [breakout adapters]
-(https://www.adafruit.com/product/345).  However, the nunchuck can also be wired directly to the Arduino by removing the nunchuck connector.  This will be covered next.
+Wiring the nunchuck to the Arduino can be plug-and-play if you use one of the various Wii nunchuck 
+[breakout adapters](https://www.adafruit.com/product/345).  
+However, the nunchuck can also be wired directly to the Arduino by removing the nunchuck connector.  This will be covered next.
 
 ### Wiring the Nunchuck
 Removing the nunchuck connector reveals five wires, only four of which are required here - VCC (+3.3V), GND, SDA (data), and SCL (clock).  Unfortunately, the color of the various wires may change depending on the nunchuck supplier.  However, as a fallback the various wires can be identified by looking straight into the connector.  The wire layout would be as follows:
@@ -46,7 +47,9 @@ The transceiver that I used was part of a Sparkfun breakout board that used an S
 |IRQ          | not used!   |
 
 ### Putting It All Together
-While all of those wires could be just attached to the Arduino Uno headers, it didn’t seem to make for stable connections.  In addition, it would be best if the wireless transceiver stood up vertically above the Arduino Uno to provide better radio reception.  My solution was to use an Arduino prototyping shield.  A female 8-pin header was soldered to the prototyping shield and a male right-angle 8-pin header was soldered to the transceiver board.  Plugging the transceiver into the female header on the prototyping shield allows the transceiver to stand upright above the Arduino Uno.  The nunchuck wires can be soldered directly to the appropriate locations on the prototyping shield.  I mounted the Arduino Uno on a [plastic mounting plate](https://www.adafruit.com/product/275) that provided an area to the side for securing the nunchuck cable with a cable tie and an adhesive-backed mounting base.
+While all of those wires could be just attached to the Arduino Uno headers, it didn’t seem to make for stable connections.  In addition, it would be best if the wireless transceiver stood up vertically above the Arduino Uno to provide better radio reception.  My solution was to use an Arduino prototyping shield.  A female 8-pin header was soldered to the prototyping shield and a male right-angle 8-pin header was soldered to the transceiver board.  Plugging the transceiver into the female header on the prototyping shield allows the transceiver to stand upright above the Arduino Uno.  The nunchuck wires can be soldered directly to the appropriate locations on the prototyping shield.  I mounted the Arduino Uno on a 
+[plastic mounting plate](https://www.adafruit.com/product/275)
+ that provided an area to the side for securing the nunchuck cable with a cable tie and an adhesive-backed mounting base.
 
 ### Powering It Up
 The remote control can be powered by a power supply with a barrel jack supplying between +9V and +12V.  Alternatively, it can be powered from a laptop via a USB connector.

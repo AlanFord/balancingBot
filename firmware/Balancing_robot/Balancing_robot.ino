@@ -15,38 +15,52 @@
 #include <Wire.h>                                            //Include the Wire.h library so we can communicate with the gyro
 
 #include "RF24.h"   //from the RF24 Arduino library
+
+///////////////////////////////////////////////////////////////////////////////////////
+// User Config for the GPIO Pins
+// Other pins (such as I2C, UART, and SPI pins) may be used internally by various libraries
+///////////////////////////////////////////////////////////////////////////////////////
+const int RIGHTMOTORSTEP_PIN   =  2;
+const int RIGHTMOTORDIR_PIN    =  3;
+const int LEFTMOTORSTEP_PIN    =  4;
+const int LEFTMOTORDIR_PIN     =  5;
+const int RADIO_CHIP_ENABLE_PIN = 9;
+const int RADIO_CHIP_SELECT_PIN = 10;
+const int LED_PIN = 17;
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 // User Config For the Radio
 // Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 9 & 10
-RF24 radio(9,10);
+RF24 radio(RADIO_CHIP_ENABLE_PIN,RADIO_CHIP_SELECT_PIN);
 ///////////////////////////////////////////////////////////////////////////////////////
-static byte radio_address[] = "1robt";
+const byte radio_address[] = "1robt";
 
 // User Config for the gyro
 ////////////////////////////////////////////////////////
 ///  \brief MPU-6050 I2C address (0x68 or 0x69).
 ////////////////////////////////////////////////////////
-int gyro_address = 0x68;                                     //MPU-6050 I2C address (0x68 or 0x69)
-int acc_calibration_value = -503;                            //Enter the accelerometer calibration value
+const int gyro_address = 0x68;                                     
+const int acc_calibration_value = -503;                            
 
 ////////////////////////////////////////////////////////
 ///  \brief Gain setting for the P-controller (15).
 ////////////////////////////////////////////////////////
-float pid_p_gain = 15;                                       
+const float pid_p_gain = 15;                                       
 ////////////////////////////////////////////////////////
 ///  \brief Gain setting for the I-controller (1.5).
 ////////////////////////////////////////////////////////
-float pid_i_gain = 1.5;                                      //Gain setting for the I-controller (1.5)
+const float pid_i_gain = 1.5;                                      
 ////////////////////////////////////////////////////////
 ///  \brief Gain setting for the D-controller (30).
 ////////////////////////////////////////////////////////
-float pid_d_gain = 30;   
+const float pid_d_gain = 30;   
 
 
-float turning_speed = 30;                                    //Turning speed (20)
-float max_target_speed = 150;                                //Max target speed (100)
 
-int LED_PIN = 17;
+const float turning_speed = 30;                                    //Turning speed (20)
+const float max_target_speed = 150;                                //Max target speed (100)
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Declaring global variables
@@ -57,21 +71,20 @@ int left_motor, throttle_left_motor, throttle_counter_left_motor, throttle_left_
 int right_motor, throttle_right_motor, throttle_counter_right_motor, throttle_right_motor_memory;
 int battery_voltage;
 int receive_counter;
-int gyro_pitch_data_raw, gyro_yaw_data_raw, accelerometer_data_raw;
 
 long gyro_yaw_calibration_value, gyro_pitch_calibration_value;
 
 static unsigned long loop_timer;
 
-float angle_gyro, angle_acc, angle, self_balance_pid_setpoint;
-float pid_error_temp, pid_i_mem, pid_setpoint, gyro_input, pid_output, pid_last_d_error;
-float pid_output_left, pid_output_right;
+float angle_gyro, angle_acc, self_balance_pid_setpoint;
+float pid_error_temp, pid_i_mem, pid_setpoint, pid_last_d_error;
+float pid_output, pid_output_left, pid_output_right;
 
 
-const uint8_t LEFTMOTORDIR     = (0b00000001 << 5);
-const uint8_t LEFTMOTORSTEP    = (0b00000001 << 4);
-const uint8_t RIGHTMOTORDIR    = (0b00000001 << 3);
-const uint8_t RIGHTMOTORSTEP   = (0b00000001 << 2);
+const uint8_t LEFTMOTORDIR     = (0b00000001 << LEFTMOTORDIR_PIN);
+const uint8_t LEFTMOTORSTEP    = (0b00000001 << LEFTMOTORSTEP_PIN);
+const uint8_t RIGHTMOTORDIR    = (0b00000001 << RIGHTMOTORDIR_PIN);
+const uint8_t RIGHTMOTORSTEP   = (0b00000001 << RIGHTMOTORSTEP_PIN);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Setup basic functions
@@ -82,10 +95,10 @@ void setup(){
   #endif
 
   // set input/output modes for gpio pins
-  pinMode(2, OUTPUT);                            
-  pinMode(3, OUTPUT);                            
-  pinMode(4, OUTPUT);                            
-  pinMode(5, OUTPUT);                            
+  pinMode(RIGHTMOTORSTEP_PIN, OUTPUT);                            
+  pinMode(RIGHTMOTORDIR_PIN, OUTPUT);                            
+  pinMode(LEFTMOTORSTEP_PIN, OUTPUT);                            
+  pinMode(LEFTMOTORDIR_PIN, OUTPUT);                            
   pinMode(LED_PIN, OUTPUT);                      
 
   // I2C will be used to communicate with the gyro
@@ -111,78 +124,25 @@ void setup(){
 //Main program loop
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void loop(){
-  // receive data from the radio (i.e. from the remote controller)
-  if(radio.available()){
-    radio.read(&received_byte,sizeof(received_byte));
-    receive_counter = 0;                                                    //Reset the receive_counter variable
-  }
-  if(receive_counter <= 25)receive_counter ++;                              //The received byte will be valid for 25 program loops (100 milliseconds)
-  else received_byte = 0x00;                                                //After 100 milliseconds the received byte is deleted
+  get_radio_data();
   
-  //Load the battery voltage to the battery_voltage variable.
-  //850 is the voltage compensation for the diode.
-  //Resistor voltage divider => (3.3k + 2.15k)/2.15k = 2.5349
-  //12.674V equals ~5V @ Analog 0.
-  //12.472V equals 4.92V @ Analog 0.
-  //12472 / 1023 =
-  //12.674V equals 1023 analogRead(0).
-  //12674 / 1023 = 12.192.
-  //The variable battery_voltage holds 1050 if the battery voltage is 10.5V.
-  battery_voltage = (analogRead(0) * 12.191) + 850;
-  #ifdef BR_DEBUG
-  Serial.print(F("battery_voltage = "));
-  Serial.println(battery_voltage);
-  #endif
-  
-  if(battery_voltage < 10500 && battery_voltage > 8000){                      //If batteryvoltage is below 10.5V and higher than 8.0V
-    digitalWrite(LED_PIN, HIGH);                                                 //Turn on the led if battery voltage is to low
+  if ( battery_voltage_is_low() ) {
+    digitalWrite(LED_PIN, HIGH);                                            //Turn on the led if battery voltage is to low
     low_bat = 1;                                                            //Set the low_bat variable to 1
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //Angle calculations
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  Wire.beginTransmission(gyro_address);                                     //Start communication with the gyro
-  Wire.write(0x3F);                                                         //Start reading at register 3F
-  Wire.endTransmission();                                                   //End the transmission
-  Wire.requestFrom(gyro_address, 2);                                        //Request 2 bytes from the gyro
-  accelerometer_data_raw = Wire.read()<<8|Wire.read();                      //Combine the two bytes to make one integer
-  accelerometer_data_raw += acc_calibration_value;                          //Add the accelerometer calibration value
-  if(accelerometer_data_raw > 8200)accelerometer_data_raw = 8200;           //Prevent division by zero by limiting the acc data to +/-8200;
-  if(accelerometer_data_raw < -8200)accelerometer_data_raw = -8200;         //Prevent division by zero by limiting the acc data to +/-8200;
-
-  // note: 57.296 is degrees/radian
-  angle_acc = asin((float)accelerometer_data_raw/8200.0)* 57.296;           //Calculate the current angle according to the accelerometer
+  angle_acc = get_accelerometer_angle();
 
   if(start == 0 && angle_acc > -0.5&& angle_acc < 0.5){                     //If the accelerometer angle is almost 0
     angle_gyro = angle_acc;                                                 //Load the accelerometer angle in the angle_gyro variable
     start = 1;                                                              //Set the start variable to start the PID controller
   }
   
-  Wire.beginTransmission(gyro_address);                                     //Start communication with the gyro
-  Wire.write(0x43);                                                         //Start reading at register 43
-  Wire.endTransmission();                                                   //End the transmission
-  Wire.requestFrom(gyro_address, 4);                                        //Request 4 bytes from the gyro
-  gyro_yaw_data_raw = Wire.read()<<8|Wire.read();                           //Combine the two bytes to make one integer
-  gyro_pitch_data_raw = Wire.read()<<8|Wire.read();                         //Combine the two bytes to make one integer
-  
-  gyro_pitch_data_raw -= gyro_pitch_calibration_value;                      //Add the gyro calibration value
-  // 1/(250 cycles/sec)(131 LSB/deg/sec)] = 0.0000305 deg/cycle/LSB
-  angle_gyro += gyro_pitch_data_raw * 0.0000305;                             //Calculate the traveled during this loop angle and add this to the angle_gyro variable
-  
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //MPU-6050 offset compensation
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //Not every gyro is mounted 100% level with the axis of the robot. This can be cause by misalignments during manufacturing of the breakout board. 
-  //As a result the robot will not rotate at the exact same spot and start to make larger and larger circles.
-  //To compensate for this behavior a VERY SMALL angle compensation is needed when the robot is rotating.
-  //Try 0.0000003 or -0.0000003 first to see if there is any improvement.
+  get_gyro_angle(angle_acc);
 
-  gyro_yaw_data_raw -= gyro_yaw_calibration_value;                          //Add the gyro calibration value
-  //Uncomment the following line to make the compensation active
-  //angle_gyro -= gyro_yaw_data_raw * 0.0000003;                            //Compensate the gyro offset when the robot is rotating
-
-  angle_gyro = angle_gyro * 0.9996 + angle_acc * 0.0004;                    //Correct the drift of the gyro angle with the accelerometer angle
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //PID controller calculations
@@ -324,6 +284,16 @@ void initialize_radio() {
   radio.startListening();
 }
 
+void get_radio_data(){
+  // receive data from the radio (i.e. from the remote controller)
+  if(radio.available()){
+    radio.read(&received_byte,sizeof(received_byte));
+    receive_counter = 0;                                                    //Reset the receive_counter variable
+  }
+  if(receive_counter <= 25)receive_counter ++;                              //The received byte will be valid for 25 program loops (100 milliseconds)
+  else received_byte = 0x00;                                                //After 100 milliseconds the received byte is deleted
+}
+
 void initialize_i2c() {
   Wire.begin();                                                             //Start the I2C bus as master
   TWBR = 12;                                                                //Set the I2C clock speed to 400kHz
@@ -378,6 +348,66 @@ void calibrate_gyro() {
   gyro_yaw_calibration_value /= 500;                                        //Divide the total value by 500 to get the avarage gyro offset
 }
 
+bool battery_voltage_is_low() {
+  int battery_voltage;
+  //Load the battery voltage to the battery_voltage variable.
+  //850 is the voltage compensation for the diode.
+  //Resistor voltage divider => (3.3k + 2.15k)/2.15k = 2.5349
+  //12.674V equals ~5V @ Analog 0.
+  //12.472V equals 4.92V @ Analog 0.
+  //12472 / 1023 =
+  //12.674V equals 1023 analogRead(0).
+  //12674 / 1023 = 12.192.
+  //The variable battery_voltage holds 1050 if the battery voltage is 10.5V.
+  battery_voltage = (analogRead(0) * 12.191) + 850;
+  if(battery_voltage < 10500 && battery_voltage > 8000){   //If batteryvoltage is below 10.5V and higher than 8.0V
+  	return true;
+  }
+  return false;
+}
+
+float get_accelerometer_angle() {
+  float accelerometer_data_raw;
+  Wire.beginTransmission(gyro_address);                                     //Start communication with the gyro
+  Wire.write(0x3F);                                                         //Start reading at register 3F
+  Wire.endTransmission();                                                   //End the transmission
+  Wire.requestFrom(gyro_address, 2);                                        //Request 2 bytes from the gyro
+  accelerometer_data_raw = Wire.read()<<8|Wire.read();                      //Combine the two bytes to make one integer
+  accelerometer_data_raw += acc_calibration_value;                          //Add the accelerometer calibration value
+  if(accelerometer_data_raw > 8200)accelerometer_data_raw = 8200;           //Prevent division by zero by limiting the acc data to +/-8200;
+  if(accelerometer_data_raw < -8200)accelerometer_data_raw = -8200;         //Prevent division by zero by limiting the acc data to +/-8200;
+  // note: 57.296 is degrees/radian
+  return asin((float)accelerometer_data_raw/8200.0)* 57.296;           //Calculate the current angle according to the accelerometer
+}
+
+void get_gyro_angle(float angle_acc) {
+  float gyro_yaw_data_raw;
+  float gyro_pitch_data_raw;
+  Wire.beginTransmission(gyro_address);                                     //Start communication with the gyro
+  Wire.write(0x43);                                                         //Start reading at register 43
+  Wire.endTransmission();                                                   //End the transmission
+  Wire.requestFrom(gyro_address, 4);                                        //Request 4 bytes from the gyro
+  gyro_yaw_data_raw = Wire.read()<<8|Wire.read();                           //Combine the two bytes to make one integer
+  gyro_pitch_data_raw = Wire.read()<<8|Wire.read();                         //Combine the two bytes to make one integer
+  
+  gyro_pitch_data_raw -= gyro_pitch_calibration_value;                      //Add the gyro calibration value
+  // 1/(250 cycles/sec)(131 LSB/deg/sec)] = 0.0000305 deg/cycle/LSB
+  angle_gyro += gyro_pitch_data_raw * 0.0000305;                             //Calculate the traveled during this loop angle and add this to the angle_gyro variable
+  
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //MPU-6050 offset compensation
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //Not every gyro is mounted 100% level with the axis of the robot. This can be cause by misalignments during manufacturing of the breakout board. 
+  //As a result the robot will not rotate at the exact same spot and start to make larger and larger circles.
+  //To compensate for this behavior a VERY SMALL angle compensation is needed when the robot is rotating.
+  //Try 0.0000003 or -0.0000003 first to see if there is any improvement.
+
+  gyro_yaw_data_raw -= gyro_yaw_calibration_value;                          //Add the gyro calibration value
+  //Uncomment the following line to make the compensation active
+  //angle_gyro -= gyro_yaw_data_raw * 0.0000003;                            //Compensate the gyro offset when the robot is rotating
+
+  angle_gyro = angle_gyro * 0.9996 + angle_acc * 0.0004;            //Correct the drift of the gyro angle with the accelerometer angle
+}
 
 
 

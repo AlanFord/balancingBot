@@ -28,6 +28,15 @@ const int RADIO_CHIP_ENABLE_PIN = 9;
 const int RADIO_CHIP_SELECT_PIN = 10;
 const int LED_PIN = 17;
 
+///////////////////////////////////////////////////////////////////////////////////////
+// Radio signal data for bot control
+///////////////////////////////////////////////////////////////////////////////////////
+const byte TURN_LEFT = B00000001;
+const byte TURN_RIGHT = B00000010;
+const byte MOVE_FORWARD = B00000100;
+const byte MOVE_REVERSE = B00001000;
+const byte STABILIZE = B00001100;
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // User Config For the Radio
@@ -68,23 +77,33 @@ const float turning_speed = 30;                                    //Turning spe
 const float max_target_speed = 150;                                //Max target speed (100)
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Declaring global variables
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-byte start, received_byte, low_bat;
 
-int left_motor, throttle_left_motor, throttle_counter_left_motor, throttle_left_motor_memory;
-int right_motor, throttle_right_motor, throttle_counter_right_motor, throttle_right_motor_memory;
 int battery_voltage;
-int receive_counter;
 
-long gyro_yaw_calibration_value, gyro_pitch_calibration_value;
 
 static unsigned long loop_timer;
 
-float angle_gyro, angle_acc, self_balance_pid_setpoint;
-float pid_error_temp, pid_i_mem, pid_setpoint, pid_last_d_error;
-float pid_output, pid_output_left, pid_output_right;
+
+// Variables for gyro calculations
+float angle_gyro, angle_acc;
+long gyro_yaw_calibration_value, gyro_pitch_calibration_value;
+
+// Variables for PID controller calculations
+float pid_error_temp, pid_i_mem, pid_last_d_error;
+float pid_output;
+
+// Variables for Direction Control calculations
+float pid_output_left, pid_output_right;
+float pid_setpoint, self_balance_pid_setpoint;
+
+// Variables for motor pulse calculations
+int left_motor, throttle_left_motor;
+int right_motor, throttle_right_motor;
+
+// Variables for the timer
+int throttle_counter_left_motor, throttle_left_motor_memory;
+int throttle_counter_right_motor, throttle_right_motor_memory;
+
 
 
 const uint8_t LEFTMOTORDIR     = (0b00000001 << LEFTMOTORDIR_PIN);
@@ -130,11 +149,14 @@ void setup(){
 //Main program loop
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void loop(){
-  get_radio_data();
+  byte received_byte = 0;
+  static byte low_bat_flag = 0;
+  static byte start_flag = 0;
+  received_byte = get_radio_data();
   
   if ( battery_voltage_is_low() ) {
     digitalWrite(LED_PIN, HIGH);                                            //Turn on the led if battery voltage is to low
-    low_bat = 1;                                                            //Set the low_bat variable to 1
+    low_bat_flag = 1;                                                            //Set the low_bat_flag variable to 1
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,9 +164,9 @@ void loop(){
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   angle_acc = get_accelerometer_angle();
 
-  if(start == 0 && angle_acc > -0.5&& angle_acc < 0.5){                     //If the accelerometer angle is almost 0
+  if(start_flag == 0 && angle_acc > -0.5&& angle_acc < 0.5){                     //If the accelerometer angle is almost 0
     angle_gyro = angle_acc;                                                 //Load the accelerometer angle in the angle_gyro variable
-    start = 1;                                                              //Set the start variable to start the PID controller
+    start_flag = 1;                                                              //Set the start variable to start the PID controller
   }
   
   get_gyro_angle(angle_acc);
@@ -171,38 +193,39 @@ void loop(){
 
   if(pid_output < 5 && pid_output > -5)pid_output = 0;                      //Create a dead-band to stop the motors when the robot is balanced
 
-  if(angle_gyro > 30 || angle_gyro < -30 || start == 0 || low_bat == 1){    //If the robot tips over or the start variable is zero or the battery is empty
+  if(angle_gyro > 30 || angle_gyro < -30 || start_flag == 0 || low_bat_flag == 1){    //If the robot tips over or the start variable is zero or the battery is empty
     pid_output = 0;                                                         //Set the PID controller output to 0 so the motors stop moving
     pid_i_mem = 0;                                                          //Reset the I-controller memory
-    start = 0;                                                              //Set the start variable to 0
+    start_flag = 0;                                                              //Set the start variable to 0
     self_balance_pid_setpoint = 0;                                          //Reset the self_balance_pid_setpoint variable
   }
 
+
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //Control calculations
+  //Direction Control calculations
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   pid_output_left = pid_output;                                             //Copy the controller output to the pid_output_left variable for the left motor
   pid_output_right = pid_output;                                            //Copy the controller output to the pid_output_right variable for the right motor
 
-  if(received_byte & B00000001){                                            //If the first bit of the receive byte is set change the left and right variable to turn the robot to the left
+  if(received_byte & TURN_LEFT){                                            //If the first bit of the receive byte is set change the left and right variable to turn the robot to the left
     pid_output_left += turning_speed;                                       //Increase the left motor speed
     pid_output_right -= turning_speed;                                      //Decrease the right motor speed
   }
-  if(received_byte & B00000010){                                            //If the second bit of the receive byte is set change the left and right variable to turn the robot to the right
+  if(received_byte & TURN_RIGHT){                                            //If the second bit of the receive byte is set change the left and right variable to turn the robot to the right
     pid_output_left -= turning_speed;                                       //Decrease the left motor speed
     pid_output_right += turning_speed;                                      //Increase the right motor speed
   }
 
-  if(received_byte & B00000100){                                            //If the third bit of the receive byte is set change the left and right variable to move the robot forward
+  if(received_byte & MOVE_FORWARD){                                            //If the third bit of the receive byte is set change the left and right variable to move the robot forward
     if(pid_setpoint > -2.5)pid_setpoint -= 0.05;                            //Slowly change the setpoint angle so the robot starts leaning forewards
     if(pid_output > max_target_speed * -1)pid_setpoint -= 0.005;            //Slowly change the setpoint angle so the robot starts leaning forewards
   }
-  if(received_byte & B00001000){                                            //If the forth bit of the receive byte is set change the left and right variable to move the robot backward
+  if(received_byte & MOVE_REVERSE){                                            //If the forth bit of the receive byte is set change the left and right variable to move the robot backward
     if(pid_setpoint < 2.5)pid_setpoint += 0.05;                             //Slowly change the setpoint angle so the robot starts leaning backwards
     if(pid_output < max_target_speed)pid_setpoint += 0.005;                 //Slowly change the setpoint angle so the robot starts leaning backwards
   }   
 
-  if(!(received_byte & B00001100)){                                         //Slowly reduce the setpoint to zero if no foreward or backward command is given
+  if(!(received_byte & STABILIZE)){                                         //Slowly reduce the setpoint to zero if no foreward or backward command is given
     if(pid_setpoint > 0.5)pid_setpoint -=0.05;                              //If the PID setpoint is larger then 0.5 reduce the setpoint with 0.05 every loop
     else if(pid_setpoint < -0.5)pid_setpoint +=0.05;                        //If the PID setpoint is smaller then -0.5 increase the setpoint with 0.05 every loop
     else pid_setpoint = 0;                                                  //If the PID setpoint is smaller then 0.5 or larger then -0.5 set the setpoint to 0
@@ -284,22 +307,44 @@ ISR(TIMER2_COMPA_vect){
   else if(throttle_counter_right_motor == 2)PORTD &= ~RIGHTMOTORSTEP;       //Set output 4 LOW because the pulse only has to last for 20us
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// \brief initializes the RF24 radio transceiver over the SPI bus
+///
+/// \param[in] radio_address - SPI address of radio
+/// \return void
+///////////////////////////////////////////////////////////////////////////////
 void initialize_radio() {
   radio.begin();                                                            //Start the SPI nRF24L01 radio
   radio.openReadingPipe(1,radio_address);                                   // Open a reading pipe on the radio
   radio.startListening();
 }
 
-void get_radio_data(){
+///////////////////////////////////////////////////////////////////////////////
+/// \brief Retrieves a radio command from the wii nunchuck over the 
+/// nRF24L01 radio. Sets the global variable receive_byte
+///
+/// \return byte
+///////////////////////////////////////////////////////////////////////////////
+byte get_radio_data(){
+  static int receive_counter;
+  static byte received_byte;
   // receive data from the radio (i.e. from the remote controller)
   if(radio.available()){
     radio.read(&received_byte,sizeof(received_byte));
-    receive_counter = 0;                                                    //Reset the receive_counter variable
+    receive_counter = 0;                             //Reset the receive_counter variable
   }
-  if(receive_counter <= 25)receive_counter ++;                              //The received byte will be valid for 25 program loops (100 milliseconds)
-  else received_byte = 0x00;                                                //After 100 milliseconds the received byte is deleted
+  if(receive_counter <= 25)
+    receive_counter ++;                              //The received byte will be valid for 25 program loops (100 milliseconds)
+  else 
+    received_byte = 0x00;                            //After 100 milliseconds the received byte is deleted
+  return received_byte;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// \brief Initialize the I2C bus and set the associated clock frequency.
+///
+/// \return void
+///////////////////////////////////////////////////////////////////////////////
 void initialize_i2c() {
   Wire.begin();                                                             //Start the I2C bus as master
   TWBR = 12;                                                                //Set the I2C clock speed to 400kHz
@@ -340,7 +385,7 @@ void initialize_gyro() {
 }
 
 void calibrate_gyro() {
-  for(receive_counter = 0; receive_counter < 500; receive_counter++){       //Create 500 loops
+  for(int receive_counter = 0; receive_counter < 500; receive_counter++){       //Create 500 loops
     if(receive_counter % 15 == 0)digitalWrite(LED_PIN, !digitalRead(LED_PIN));        //Change the state of the LED every 15 loops to make the LED blink fast
     Wire.beginTransmission(gyro_address);                                   //Start communication with the gyro
     Wire.write(0x43);                                                       //Start reading the Who_am_I register 75h

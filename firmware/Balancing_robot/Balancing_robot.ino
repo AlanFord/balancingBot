@@ -76,11 +76,6 @@ const float turning_speed = 30;                                    //Turning spe
 ////////////////////////////////////////////////////////
 const float max_target_speed = 150;                                //Max target speed (100)
 
-
-
-int battery_voltage;
-
-
 static unsigned long loop_timer;
 
 
@@ -97,12 +92,12 @@ float pid_output_left, pid_output_right;
 float pid_setpoint, self_balance_pid_setpoint;
 
 // Variables for motor pulse calculations
-int left_motor, throttle_left_motor;
-int right_motor, throttle_right_motor;
+volatile int throttle_left_motor;
+volatile int throttle_right_motor;
 
 // Variables for the timer
-int throttle_counter_left_motor, throttle_left_motor_memory;
-int throttle_counter_right_motor, throttle_right_motor_memory;
+volatile int throttle_counter_left_motor, throttle_left_motor_memory;
+volatile int throttle_counter_right_motor, throttle_right_motor_memory;
 
 
 
@@ -237,6 +232,20 @@ void loop(){
     if(pid_output > 0)self_balance_pid_setpoint -= 0.0015;                  //Decrease the self_balance_pid_setpoint if the robot is still moving backwards
   }
 
+  calculate_motor_pulse_interval();
+
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //Loop time timer
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //The angle calculations are tuned for a loop time of 4 milliseconds. To make sure every loop is exactly 4 milliseconds a wait loop
+  //is created by setting the loop_timer variable to +4000 microseconds every loop.
+  while(loop_timer > micros());
+  loop_timer += 4000;
+}
+
+void calculate_motor_pulse_interval() {
+  int left_motor, right_motor;
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //Motor pulse calculations
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -257,17 +266,12 @@ void loop(){
   else right_motor = 0;
 
   //Copy the pulse time to the throttle variables so the interrupt subroutine can use them
+  noInterrupts();
   throttle_left_motor = left_motor;
   throttle_right_motor = right_motor;
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //Loop time timer
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //The angle calculations are tuned for a loop time of 4 milliseconds. To make sure every loop is exactly 4 milliseconds a wait loop
-  //is created by setting the loop_timer variable to +4000 microseconds every loop.
-  while(loop_timer > micros());
-  loop_timer += 4000;
+  interrupts();
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Interrupt routine  TIMER2_COMPA_vect
@@ -400,8 +404,8 @@ void calibrate_gyro() {
 }
 
 bool battery_voltage_is_low() {
-  int battery_voltage;
-  //Load the battery voltage to the battery_voltage variable.
+  int voltage;
+  //Load the battery voltage to the voltage variable.
   //850 is the voltage compensation for the diode.
   //Resistor voltage divider => (3.3k + 2.15k)/2.15k = 2.5349
   //12.674V equals ~5V @ Analog 0.
@@ -409,9 +413,9 @@ bool battery_voltage_is_low() {
   //12472 / 1023 =
   //12.674V equals 1023 analogRead(0).
   //12674 / 1023 = 12.192.
-  //The variable battery_voltage holds 1050 if the battery voltage is 10.5V.
-  battery_voltage = (analogRead(0) * 12.191) + 850;
-  if(battery_voltage < 10500 && battery_voltage > 8000){   //If batteryvoltage is below 10.5V and higher than 8.0V
+  //The variable voltage holds 1050 if the battery voltage is 10.5V.
+  voltage = (analogRead(0) * 12.191) + 850;
+  if(voltage < 10500 && voltage > 8000){   //If batteryvoltage is below 10.5V and higher than 8.0V
   	return true;
   }
   return false;

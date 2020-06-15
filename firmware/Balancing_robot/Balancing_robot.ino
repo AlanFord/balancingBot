@@ -16,6 +16,8 @@
 
 #include "RF24.h"   //from the RF24 Arduino library
 
+// union minod {float first, float second};
+
 ///////////////////////////////////////////////////////////////////////////////////////
 // User Config for the GPIO Pins
 // Other pins (such as I2C, UART, and SPI pins) may be used internally by various libraries
@@ -38,10 +40,12 @@ const byte MOVE_REVERSE = B00001000;
 const byte STABILIZE = B00001100;
 
 
-///////////////////////////////////////////////////////////////////////////////////////
-// User Config For the Radio
-// Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 9 & 10
-RF24 radio(RADIO_CHIP_ENABLE_PIN,RADIO_CHIP_SELECT_PIN);
+// pin definitions for stepper motor controls
+const uint8_t LEFTMOTORDIR     = (0b00000001 << LEFTMOTORDIR_PIN);
+const uint8_t LEFTMOTORSTEP    = (0b00000001 << LEFTMOTORSTEP_PIN);
+const uint8_t RIGHTMOTORDIR    = (0b00000001 << RIGHTMOTORDIR_PIN);
+const uint8_t RIGHTMOTORSTEP   = (0b00000001 << RIGHTMOTORSTEP_PIN);
+
 ///////////////////////////////////////////////////////////////////////////////////////
 const byte radio_address[] = "1robt";
 
@@ -76,6 +80,12 @@ const float turning_speed = 30;                                    //Turning spe
 ////////////////////////////////////////////////////////
 const float max_target_speed = 150;                                //Max target speed (100)
 
+
+////////////////////////////////////////////////////////
+///  Global Variables
+////////////////////////////////////////////////////////
+
+//  used by the primary timing routine
 static unsigned long loop_timer;
 
 
@@ -95,16 +105,10 @@ float pid_setpoint, self_balance_pid_setpoint;
 volatile int throttle_left_motor;
 volatile int throttle_right_motor;
 
-// Variables for the timer
-volatile int throttle_counter_left_motor, throttle_left_motor_memory;
-volatile int throttle_counter_right_motor, throttle_right_motor_memory;
-
-
-
-const uint8_t LEFTMOTORDIR     = (0b00000001 << LEFTMOTORDIR_PIN);
-const uint8_t LEFTMOTORSTEP    = (0b00000001 << LEFTMOTORSTEP_PIN);
-const uint8_t RIGHTMOTORDIR    = (0b00000001 << RIGHTMOTORDIR_PIN);
-const uint8_t RIGHTMOTORSTEP   = (0b00000001 << RIGHTMOTORSTEP_PIN);
+///////////////////////////////////////////////////////////////////////////////////////
+// User Config For the Radio
+// Hardware configuration: Set up nRF24L01 radio on SPI bus plus pins 9 & 10
+RF24 radio(RADIO_CHIP_ENABLE_PIN,RADIO_CHIP_SELECT_PIN);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Setup basic functions
@@ -282,6 +286,10 @@ ISR(TIMER2_COMPA_vect){
   // The binary operations used to set the left and right motor directions are not identical.
   // This is needed because the motors face in opposite directions, hence the forward/backward bit pattern is opposite.
   ///////////
+  // Variables for the timer
+  volatile static int throttle_counter_left_motor, throttle_left_motor_memory;
+  volatile static int throttle_counter_right_motor, throttle_right_motor_memory;
+
   //Left motor pulse calculations
   throttle_counter_left_motor ++;                                           //Increase the throttle_counter_left_motor variable by 1 every time this routine is executed
   if(throttle_counter_left_motor > throttle_left_motor_memory){             //If the number of loops is larger then the throttle_left_motor_memory variable
@@ -463,31 +471,3 @@ void get_gyro_angle(float angle_acc) {
 
   angle_gyro = angle_gyro * 0.9996 + angle_acc * 0.0004;            //Correct the drift of the gyro angle with the accelerometer angle
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

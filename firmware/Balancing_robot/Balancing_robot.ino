@@ -16,7 +16,10 @@
 
 #include "RF24.h"   //from the RF24 Arduino library
 
-// union minod {float first, float second};
+struct minod {
+  float first;
+  float second;
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // User Config for the GPIO Pins
@@ -86,22 +89,40 @@ const float max_target_speed = 150;                                //Max target 
 ////////////////////////////////////////////////////////
 
 //  used by the primary timing routine
+// Initialized: setup()
+// Set:         loop()
+// Used:        loop()
 static unsigned long loop_timer;
 
 
 // Variables for gyro calculations
-float angle_gyro, angle_acc;
-long gyro_yaw_calibration_value, gyro_pitch_calibration_value;
-
-// Variables for PID controller calculations
-float pid_error_temp, pid_i_mem, pid_last_d_error;
-float pid_output;
+// Set: loop(), get_gyro_angle()
+// Used: loop()
+float angle_gyro;
+// Used: loop()
+// Set: loop()
+float angle_acc;
+// Set: calibrate_gyro()
+// Used: get_gyro_angle()
+long gyro_yaw_calibration_value;
+// Set: calibrate_gyro()
+// Used: get_gyro_angle()
+long gyro_pitch_calibration_value;
 
 // Variables for Direction Control calculations
+// Set: loop()
+// Used: calculate_motor_pulse_interval()
 float pid_output_left, pid_output_right;
-float pid_setpoint, self_balance_pid_setpoint;
+//Used: loop()
+//Set:  loop()
+float pid_setpoint;
+//Set:  loop()
+//Used: loop()
+float self_balance_pid_setpoint;
 
 // Variables for motor pulse calculations
+// Set:  calculate_motor_pulse_interval()
+// Used: ISR()
 volatile int throttle_left_motor;
 volatile int throttle_right_motor;
 
@@ -148,9 +169,14 @@ void setup(){
 //Main program loop
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void loop(){
+  bool reset_pid;
   byte received_byte = 0;
   static byte low_bat_flag = 0;
   static byte start_flag = 0;
+  //Used: loop()
+  //Set:  loop()
+  static float pid_output;
+
   received_byte = get_radio_data();
   
   if ( battery_voltage_is_low() ) {
@@ -170,66 +196,17 @@ void loop(){
   
   get_gyro_angle(angle_acc);
 
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //PID controller calculations
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //The balancing robot is angle driven. First the difference between the desired angle (setpoint) and actual angle (process value)
-  //is calculated. The self_balance_pid_setpoint variable is automatically changed to make sure that the robot stays balanced all the time.
-  //The (pid_setpoint - pid_output * 0.015) part functions as a brake function.
-  pid_error_temp = angle_gyro - self_balance_pid_setpoint - pid_setpoint;
-  if(pid_output > 10 || pid_output < -10)pid_error_temp += pid_output * 0.015 ;
-
-  pid_i_mem += pid_i_gain * pid_error_temp;                                 //Calculate the I-controller value and add it to the pid_i_mem variable
-  if(pid_i_mem > 400)pid_i_mem = 400;                                       //Limit the I-controller to the maximum controller output
-  else if(pid_i_mem < -400)pid_i_mem = -400;
-  //Calculate the PID output value
-  pid_output = pid_p_gain * pid_error_temp + pid_i_mem + pid_d_gain * (pid_error_temp - pid_last_d_error);
-  if(pid_output > 400)pid_output = 400;                                     //Limit the PI-controller to the maximum controller output
-  else if(pid_output < -400)pid_output = -400;
-
-  pid_last_d_error = pid_error_temp;                                        //Store the error for the next loop
-
-  if(pid_output < 5 && pid_output > -5)pid_output = 0;                      //Create a dead-band to stop the motors when the robot is balanced
-
   if(angle_gyro > 30 || angle_gyro < -30 || start_flag == 0 || low_bat_flag == 1){    //If the robot tips over or the start variable is zero or the battery is empty
-    pid_output = 0;                                                         //Set the PID controller output to 0 so the motors stop moving
-    pid_i_mem = 0;                                                          //Reset the I-controller memory
+    reset_pid = true;
     start_flag = 0;                                                              //Set the start variable to 0
     self_balance_pid_setpoint = 0;                                          //Reset the self_balance_pid_setpoint variable
   }
+  else
+  	reset_pid = false;
+  pid_output = pid_calculator(reset_pid, pid_output);
 
+  direction_control(pid_output, received_byte);  
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //Direction Control calculations
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  pid_output_left = pid_output;                                             //Copy the controller output to the pid_output_left variable for the left motor
-  pid_output_right = pid_output;                                            //Copy the controller output to the pid_output_right variable for the right motor
-
-  if(received_byte & TURN_LEFT){                                            //If the first bit of the receive byte is set change the left and right variable to turn the robot to the left
-    pid_output_left += turning_speed;                                       //Increase the left motor speed
-    pid_output_right -= turning_speed;                                      //Decrease the right motor speed
-  }
-  if(received_byte & TURN_RIGHT){                                            //If the second bit of the receive byte is set change the left and right variable to turn the robot to the right
-    pid_output_left -= turning_speed;                                       //Decrease the left motor speed
-    pid_output_right += turning_speed;                                      //Increase the right motor speed
-  }
-
-  if(received_byte & MOVE_FORWARD){                                            //If the third bit of the receive byte is set change the left and right variable to move the robot forward
-    if(pid_setpoint > -2.5)pid_setpoint -= 0.05;                            //Slowly change the setpoint angle so the robot starts leaning forewards
-    if(pid_output > max_target_speed * -1)pid_setpoint -= 0.005;            //Slowly change the setpoint angle so the robot starts leaning forewards
-  }
-  if(received_byte & MOVE_REVERSE){                                            //If the forth bit of the receive byte is set change the left and right variable to move the robot backward
-    if(pid_setpoint < 2.5)pid_setpoint += 0.05;                             //Slowly change the setpoint angle so the robot starts leaning backwards
-    if(pid_output < max_target_speed)pid_setpoint += 0.005;                 //Slowly change the setpoint angle so the robot starts leaning backwards
-  }   
-
-  if(!(received_byte & STABILIZE)){                                         //Slowly reduce the setpoint to zero if no foreward or backward command is given
-    if(pid_setpoint > 0.5)pid_setpoint -=0.05;                              //If the PID setpoint is larger then 0.5 reduce the setpoint with 0.05 every loop
-    else if(pid_setpoint < -0.5)pid_setpoint +=0.05;                        //If the PID setpoint is smaller then -0.5 increase the setpoint with 0.05 every loop
-    else pid_setpoint = 0;                                                  //If the PID setpoint is smaller then 0.5 or larger then -0.5 set the setpoint to 0
-  }
-  
   //The self balancing point is adjusted when there is not forward or backwards movement from the transmitter. This way the robot will always find it's balancing point
   if(pid_setpoint == 0){                                                    //If the setpoint is zero degrees
     if(pid_output < 0)self_balance_pid_setpoint += 0.0015;                  //Increase the self_balance_pid_setpoint if the robot is still moving forewards
@@ -470,4 +447,72 @@ void get_gyro_angle(float angle_acc) {
   //angle_gyro -= gyro_yaw_data_raw * 0.0000003;                            //Compensate the gyro offset when the robot is rotating
 
   angle_gyro = angle_gyro * 0.9996 + angle_acc * 0.0004;            //Correct the drift of the gyro angle with the accelerometer angle
+}
+
+float pid_calculator(bool reset, float pid_output) {
+  float pid_error_temp;
+  static float pid_i_mem = 0;
+  static float pid_last_d_error = 0;
+  if (reset ) {
+    pid_output = 0;                                                         //Set the PID controller output to 0 so the motors stop moving
+    pid_i_mem = 0; 
+    pid_last_d_error = 0;                                                         //Reset the I-controller memory
+  }
+  else {
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//PID controller calculations
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//The balancing robot is angle driven. First the difference between the desired angle (setpoint) and actual angle (process value)
+	//is calculated. The self_balance_pid_setpoint variable is automatically changed to make sure that the robot stays balanced all the time.
+	//The (pid_setpoint - pid_output * 0.015) part functions as a brake function.
+	pid_error_temp = angle_gyro - self_balance_pid_setpoint - pid_setpoint;
+	if(pid_output > 10 || pid_output < -10)pid_error_temp += pid_output * 0.015 ;
+
+    pid_i_mem += pid_i_gain * pid_error_temp;                                 //Calculate the I-controller value and add it to the pid_i_mem variable
+	if(pid_i_mem > 400)pid_i_mem = 400;                                       //Limit the I-controller to the maximum controller output
+	else if(pid_i_mem < -400)pid_i_mem = -400;
+	//Calculate the PID output value
+	pid_output = pid_p_gain * pid_error_temp + pid_i_mem + pid_d_gain * (pid_error_temp - pid_last_d_error);
+	if(pid_output > 400)pid_output = 400;                                     //Limit the PI-controller to the maximum controller output
+	else if(pid_output < -400)pid_output = -400;
+
+	pid_last_d_error = pid_error_temp;                                        //Store the error for the next loop
+
+	if(pid_output < 5 && pid_output > -5)pid_output = 0;                      //Create a dead-band to stop the motors when the robot is balanced
+
+  }
+  return pid_output;
+}
+
+void direction_control(float pid_output, byte received_byte) {
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //Direction Control calculations
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  pid_output_left = pid_output;                                             //Copy the controller output to the pid_output_left variable for the left motor
+  pid_output_right = pid_output;                                            //Copy the controller output to the pid_output_right variable for the right motor
+
+  if(received_byte & TURN_LEFT){                                            //If the first bit of the receive byte is set change the left and right variable to turn the robot to the left
+    pid_output_left += turning_speed;                                       //Increase the left motor speed
+    pid_output_right -= turning_speed;                                      //Decrease the right motor speed
+  }
+  if(received_byte & TURN_RIGHT){                                            //If the second bit of the receive byte is set change the left and right variable to turn the robot to the right
+    pid_output_left -= turning_speed;                                       //Decrease the left motor speed
+    pid_output_right += turning_speed;                                      //Increase the right motor speed
+  }
+
+  if(received_byte & MOVE_FORWARD){                                            //If the third bit of the receive byte is set change the left and right variable to move the robot forward
+    if(pid_setpoint > -2.5)pid_setpoint -= 0.05;                            //Slowly change the setpoint angle so the robot starts leaning forewards
+    if(pid_output > max_target_speed * -1)pid_setpoint -= 0.005;            //Slowly change the setpoint angle so the robot starts leaning forewards
+  }
+  if(received_byte & MOVE_REVERSE){                                            //If the forth bit of the receive byte is set change the left and right variable to move the robot backward
+    if(pid_setpoint < 2.5)pid_setpoint += 0.05;                             //Slowly change the setpoint angle so the robot starts leaning backwards
+    if(pid_output < max_target_speed)pid_setpoint += 0.005;                 //Slowly change the setpoint angle so the robot starts leaning backwards
+  }   
+
+  if(!(received_byte & STABILIZE)){                                         //Slowly reduce the setpoint to zero if no foreward or backward command is given
+    if(pid_setpoint > 0.5)pid_setpoint -=0.05;                              //If the PID setpoint is larger then 0.5 reduce the setpoint with 0.05 every loop
+    else if(pid_setpoint < -0.5)pid_setpoint +=0.05;                        //If the PID setpoint is smaller then -0.5 increase the setpoint with 0.05 every loop
+    else pid_setpoint = 0;                                                  //If the PID setpoint is smaller then 0.5 or larger then -0.5 set the setpoint to 0
+  }
+
 }

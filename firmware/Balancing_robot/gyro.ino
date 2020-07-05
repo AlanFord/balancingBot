@@ -35,6 +35,10 @@ void calibrate_gyro() {
   gyro_pitch_calibration_value /= 500;                                      //Divide the total value by 500 to get the avarage gyro offset
   gyro_yaw_calibration_value /= 500;                                        //Divide the total value by 500 to get the avarage gyro offset
 }
+// The gyro is mounted on the bot with the chip on it's
+// side and the "dot" on the front, lower, left corner.
+// This places the +X axis extending vertically from the 
+// top of the frame, 
 
 void get_gyro_angle(float angle_acc, float &angle_gyro) {
   float gyro_yaw_data_raw;
@@ -65,6 +69,21 @@ void get_gyro_angle(float angle_acc, float &angle_gyro) {
   angle_gyro = angle_gyro * 0.9996 + angle_acc * 0.0004;            //Correct the drift of the gyro angle with the accelerometer angle
 }
 
+// calculating an acceleropmeter angle
+// The accelerometer is mounted on the bot with the chip on it's
+// side and the "dot" on the front, lower, left corner.
+// This places the +Z axis extending from the front of the frame, 
+// and a forward tilt results in an gravitational acceleration 
+// in +Z while a backward tilt results in a gravitational 
+// acceleration in the -Z direction.
+//
+// The accelerometer has a sensitivity of 8192 LSB/g.
+// An acceleration of +1g gives a return value of +8192, and
+// an angle of asin(1) -> pi/2 radians (+90 degrees).
+// An acceleration of 0g gives a return value of 0, and
+// an angle of asin(0) -> 0 radians (0 degrees).
+// An acceleration of -1g gives a return value of -1, and 
+// an angle of asin(-1) -> -pi/2 radians (-90 degrees).
 float get_accelerometer_angle() {
   float accelerometer_data_raw;
   Wire.beginTransmission(gyro_address);                                     //Start communication with the gyro
@@ -76,6 +95,6 @@ float get_accelerometer_angle() {
   if (accelerometer_data_raw > 8200)accelerometer_data_raw = 8200;          //Prevent division by zero by limiting the acc data to +/-8200;
   if (accelerometer_data_raw < -8200)accelerometer_data_raw = -8200;        //Prevent division by zero by limiting the acc data to +/-8200;
   // note: 57.296 is degrees/radian
-  return asin((float)accelerometer_data_raw / 8200.0) * 57.296;        //Calculate the current angle according to the accelerometer
+  return asin((float)accelerometer_data_raw / 8192.0) * 57.296;        //Calculate the current angle according to the accelerometer
 }
 

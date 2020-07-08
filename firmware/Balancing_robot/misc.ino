@@ -1,3 +1,30 @@
+/////////////////////////////////////////////////
+// First, some magic numbers:
+// For a 3S (3 cell) LIPO battery, a low-low voltage is 9V.  Hence
+//   anything below 8V indicates no battery is attached (keep working in test mode).
+// Recommended stop-and-charge voltage is 10.5V  
+#define MIN_OPERATING_VOLTAGE 10500  //10.5V in mV
+#define NO_BATTERY_ATTACHED_MAX_VOLTAGE 8000  //8V in mV
+
+// Voltage Measurement Constants
+//850 mV is the voltage compensation for the diode.
+//Resistor voltage divider => 21.5k/(33k + 21.5k) = 1/2.535
+//Arduino analog input A0 reads 0 at 0V and 1023 at 5V, 
+// or 0.00489V/division
+// so,
+//voltage divider voltage = A0 * 0.00489V/division
+//battery voltage = (A0 * 0.00489V/division)*2.535 + 0.85V
+// or
+//battery voltage = (A0 * 0.0124) + 0.85V
+// in millivolts (integers make things easier)
+// battery mV = (A0 *12.4) + 850
+#define VOLTAGE_MULTIPLIER 12.4
+#define VOLTAGE_BIAS 850
+
+/////////////////////////////////////////////////
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 /// \brief Initialize the I2C bus and set the associated clock frequency.
 ///
@@ -33,9 +60,8 @@ bool battery_voltage_is_low() {
   //battery voltage = (A0 * 0.0124) + 0.85V
   // in millivolts (integers make things easier)
   // battery mV = (A0 *12.4) + 850
-  //The variable voltage holds 1050 if the battery voltage is 10.5V.
-  voltage = (analogRead(0) * 12.4) + 850;
-  if (voltage < 10500 && voltage > 8000) { //If batteryvoltage is below 10.5V and higher than 8.0V
+  voltage = (analogRead(0) * VOLTAGE_MULTIPLIER) + VOLTAGE_BIAS;
+  if (voltage < MIN_OPERATING_VOLTAGE && voltage > NO_BATTERY_ATTACHED_MAX_VOLTAGE) { 
     return true;
   }
   return false;

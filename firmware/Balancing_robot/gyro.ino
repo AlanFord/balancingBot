@@ -1,3 +1,17 @@
+/////////////////////////////////////////////////
+// First, some magic numbers:
+#define DEGREES_PER_RADIAN 57.296
+#define GYRO_DATA_ADDRESS 0x43
+#define GYRO_DATA_LENGTH 4
+#define ACCEL_DATA_ADDRESS 0x3F
+#define ACCEL_DATA_LENGTH 2
+#define ACCEL_SENSITIVITY 8192.0   // LSB/g
+
+// (0.004sec/cycle) / (131 LSB/deg/sec)] = 0.0000305 deg/cycle/LSB
+#define GYRO_CONVERSION ((loop_time_us*1.E-6)/131.)
+/////////////////////////////////////////////////
+
+
 void initialize_gyro() {
   //By default the MPU-6050 sleeps. So we have to wake it up.
   Wire.beginTransmission(gyro_address);                                     //Start communication with the address found during search.
@@ -38,21 +52,23 @@ void calibrate_gyro() {
 // The gyro is mounted on the bot with the chip on it's
 // side and the "dot" on the front, lower, left corner.
 // This places the +X axis extending vertically from the 
-// top of the frame, 
+// top of the frame, and +Y extending to the right of the
+// frame (orientation based on looking out from the front
+// of the bot).  Rotating forward results in a -Y (pitch) rotation angle
+// and turning right results in a -X (yaw) rotation angle.
 
 void get_gyro_angle(float angle_acc, float &angle_gyro) {
   float gyro_yaw_data_raw;
   float gyro_pitch_data_raw;
   Wire.beginTransmission(gyro_address);                                     //Start communication with the gyro
-  Wire.write(0x43);                                                         //Start reading at register 43
+  Wire.write(GYRO_DATA_ADDRESS);                                            //Start reading at register 43
   Wire.endTransmission();                                                   //End the transmission
-  Wire.requestFrom(gyro_address, 4);                                        //Request 4 bytes from the gyro
+  Wire.requestFrom(gyro_address, GYRO_DATA_LENGTH);                         //Request 4 bytes from the gyro
   gyro_yaw_data_raw = Wire.read() << 8 | Wire.read();                       //Combine the two bytes to make one integer
   gyro_pitch_data_raw = Wire.read() << 8 | Wire.read();                     //Combine the two bytes to make one integer
 
   gyro_pitch_data_raw -= gyro_pitch_calibration_value;                      //Add the gyro calibration value
-  // 1/(250 cycles/sec)(131 LSB/deg/sec)] = 0.0000305 deg/cycle/LSB
-  angle_gyro += gyro_pitch_data_raw * 0.0000305;                             //Calculate the traveled during this loop angle and add this to the angle_gyro variable
+  angle_gyro += gyro_pitch_data_raw * GYRO_CONVERSION;                      //Calculate the angle traveled during this loop and add this to the angle_gyro variable
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //MPU-6050 offset compensation
@@ -87,14 +103,14 @@ void get_gyro_angle(float angle_acc, float &angle_gyro) {
 float get_accelerometer_angle() {
   float accelerometer_data_raw;
   Wire.beginTransmission(gyro_address);                                     //Start communication with the gyro
-  Wire.write(0x3F);                                                         //Start reading at register 3F
+  Wire.write(ACCEL_DATA_ADDRESS);                                           //Start reading at register 3F
   Wire.endTransmission();                                                   //End the transmission
-  Wire.requestFrom(gyro_address, 2);                                        //Request 2 bytes from the gyro
+  Wire.requestFrom(gyro_address, ACCEL_DATA_LENGTH);                        //Request 2 bytes from the gyro
   accelerometer_data_raw = Wire.read() << 8 | Wire.read();                  //Combine the two bytes to make one integer
   accelerometer_data_raw += acc_calibration_value;                          //Add the accelerometer calibration value
   if (accelerometer_data_raw > 8200)accelerometer_data_raw = 8200;          //Prevent division by zero by limiting the acc data to +/-8200;
   if (accelerometer_data_raw < -8200)accelerometer_data_raw = -8200;        //Prevent division by zero by limiting the acc data to +/-8200;
   // note: 57.296 is degrees/radian
-  return asin((float)accelerometer_data_raw / 8192.0) * 57.296;        //Calculate the current angle according to the accelerometer
+  return asin((float)accelerometer_data_raw / ACCEL_SENSITIVITY) * DEGREES_PER_RADIAN;        //Calculate the current angle according to the accelerometer
 }
 

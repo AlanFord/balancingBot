@@ -1,4 +1,38 @@
 # Balancing Bot
+## Table of Contents
+- [Introduction](#introduction)
+- [The Remote Control](#the-remote-control)
+	- [Wiring the Nunchuck](#wiring-the-nunchuck)
+	- [Wiring the Transceiver](#wiring-the-transceiver)
+	- [Putting It All Together](#putting-it-all-together)
+	- [Powering It Up](#powering-it-up)
+	- [Programming the Arduino](#programming-the-arduino)
+- [The Bot](#the-bot)
+	- [Hardware](#hardware)
+		- [The Frame](#the-frame)
+		- [The Motors and Wheels](#the-motors-and-wheels)
+		- [Motor Control](#motor-control)
+		- [Balancing](#balancing)
+		- [Power](#power)
+		- [Communications](#communications)
+		- [The Blinky Lights](#the-blinky-lights)
+		- [The Brains Behind it All](#the-brains-behind-it-all)
+	- [Software](#software)
+		- [Battery Voltage Monitoring](#battery-voltage-monitoring)
+		- [Attitude Monitoring](#attitude-monitoring)
+		- [Wireless Communications](#wireless-communications)
+		- [Serial Communications](#serial-communications)
+		- [Motor Control Software](#motor-control-software)
+		- [The Feedback Calculations](#the-feedback-calculations)
+- [Operating the Balancing Bot](#operating-the-balancing-bot)
+	- [Calibrating the Accelerometer](#calibrating-the-accelerometer)
+	- [Starting up the Robot](#starting-up-the-robot)
+	- [If Something Goes Wrong](#if-something-goes-wrong)
+
+
+
+
+## Introduction
 The Balancing Bot is a battery-powered two-wheeled balancing robot that can move under remote control.  The robot is built primarily from off-the-shelf parts.  The frame is plywood, easily made with hand tools or a small CNC router.  The robot’s electronics are based on an Arduino microcontroller and a combination gyro/accelerometer.  Communications with the remote control are performed over a 2.4 GHz wireless transceiver module.  The remote control is comprised of a repurposed Wii-compatible nunchuck controller, an Arduino microcontroller, and a 2.4 GHz wireless transceiver module.
 
 This is a fork of the Joop Brokking's 
@@ -225,7 +259,7 @@ As with the remote control, communications with the wireless transceiver is done
 #### Serial Communications
 Serial communications can be enabled at compile-time by defining the macro SERIALCOMM.  Serial communications are then initiated at 9600 baud (slow enough not to impede the other work being done).  Serial communications occur over the USB connection.
 
-#### Motor Control
+#### Motor Control Software
 Motor control is not done in either of the normal Arduino functions setup() or loop().  Instead, motor control is performed in an interrupt handler.  The Arduino has built-in timers that can cause the microcontroller to perform operations on a repeating fixed interval.  One of the ways this can be done is to associate a special program (i.e. a function) with the timer.  Such a program/function is referred to as an interrupt handler.  The robot uses Timer 2 to perform motor control on an interval of every 20 microseconds.  The motor control is performed by a function called ISR(TIMER2_COMPA_vect).  Timer 2 is initialized in the standard Arduino setup() function.
 
 Moving the stepper motor by one step (or by a ¼ step in this configuration) a pulse is generated on the appropriate input pins for the stepper controllers.  This is done by pulsing Arduino Pro Mini pin D2 for the right motor and pin D4 for the left motor.
@@ -283,7 +317,7 @@ It’s pretty simple; just follow these steps:
  5.	Gently rotate the robot to a vertical position
  6.	Turn it loose and start driving it around!
 
-### IF Something Goes Wrong 
+### If Something Goes Wrong 
 If the robot falls down because it ran into something, just pull it back upright and it should stabilize itself.
 
 If, during operation, the red LED turns on, the motors will de-energize because the LiPo battery voltage has dropped too low.  Flip the toggle switch to turn off the robot, swap in a new battery, and begin again!

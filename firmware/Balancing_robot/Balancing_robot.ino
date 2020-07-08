@@ -100,7 +100,6 @@ const float turning_speed = 30;
 ////////////////////////////////////////////////////////
 const float max_target_speed = 150;
 
-
 ////////////////////////////////////////////////////////
 ///  Global Variables
 ////////////////////////////////////////////////////////
@@ -110,7 +109,11 @@ const float max_target_speed = 150;
 //  Initialized in setup()
 //  Used in loop()
 ////////////////////////////////////////////////////////
-unsigned long loop_timer;
+unsigned long start_time;
+////////////////////////////////////////////////////////
+///  \brief The time required for each program loop in microsec.
+////////////////////////////////////////////////////////
+const int loop_time_us = 4000;
 
 
 /////////////////////////////////////////////////////////
@@ -167,8 +170,7 @@ void setup() {
 
   // Timer is used to by interrupt service to control the motors
   initialize_timer();
-  //loop_timer = micros() + 4000;   //Set the loop_timer variable to the next end loop time
-  loop_timer = micros();
+  start_time = micros();
 
 }
 
@@ -224,14 +226,10 @@ void loop() {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //Loop time timer
+  // wait in a loop until "loop_time_us" microseconds has elapsed
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //The angle calculations are tuned for a loop time of 4 milliseconds. To make sure every loop is exactly 4 milliseconds a wait loop
-  //is created by setting the loop_timer variable to +4000 microseconds every loop.
-  //while (loop_timer > micros());
-  //loop_timer += 4000;
-
   do {
     current_time = micros();
-  } while (current_time - loop_timer < 4000);
-  loop_timer = current_time;
+  } while (current_time - start_time < loop_time_us);
+  start_time = current_time;
 }

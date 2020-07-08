@@ -1,4 +1,9 @@
 
+/////////////////////////////////////////////////
+// First, some magic numbers:
+#define BUFFER_TIME 100  //milliseconds, length of time radio data is considered valid
+#define BUFFER_CYCLES (BUFFER_TIME/(loop_time_us/1000)) // number of loop cycles in 1 BUFFER_TIME
+
 ///////////////////////////////////////////////////////////////////////////////
 /// \brief initializes the RF24 radio transceiver over the SPI bus
 ///
@@ -25,8 +30,8 @@ byte get_radio_data() {
     radio.read(&received_byte, sizeof(received_byte));
     receive_counter = 0;                             //Reset the receive_counter variable
   }
-  if (receive_counter <= 25)
-    receive_counter ++;                              //The received byte will be valid for 25 program loops (100 milliseconds)
+  if (receive_counter <= BUFFER_CYCLES)
+    receive_counter ++;                              //The received byte will be valid 100 milliseconds
   else
     received_byte = 0x00;                            //After 100 milliseconds the received byte is deleted
   return received_byte;

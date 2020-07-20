@@ -18,6 +18,7 @@
 		- [The Blinky Lights](#the-blinky-lights)
 		- [The Brains Behind it All](#the-brains-behind-it-all)
 	- [Software](#software)
+		- [Timing Overview](#timing-overview)
 		- [Battery Voltage Monitoring](#battery-voltage-monitoring)
 		- [Attitude Monitoring](#attitude-monitoring)
 		- [Wireless Communications](#wireless-communications)
@@ -225,6 +226,19 @@ Integrating the robot parts is the job of the Arduino Pro Mini.  The Arduino Pro
 
 ### Software
 The Arduino provides several functions, namely attitude monitoring, motor control, communications with the remote, and battery voltage monitoring.  These will be described in the following sections.  As an introduction though, it should be clear that the Arduino separates work into two categories – setup and loop.  Work performed in the setup occurs only once after power-up.  Work performed in the loop is repeated until the robot is powered down.  Some of the robot functions are performed in the setup and some are controlled by the loop.
+
+#### Timing Overview
+The various processes that make up the control software work on a number of timing intervals.
+
+- The remote control has a primary timing loop that is executed once every **40 milliseconds**.  This is the
+frequency at which the handheld controls are polled for updates and new data are transmitted to the robot.
+- Data received from the remote control by the robot is considered valid for only **100 milliseconds** if no other data is received.  After that time it is discarded.  This avoids the issue of using old, invalid commands when the radio link is interrupted.
+- The robot has a primary timing loop that is executed once every **4 milliseconds**.  This timing loop 
+controlls the frequency at which the gyro is checked, incoming remote control commands are logged, 
+and balancing control calculations are updated, and motor speeds are determined.
+- The time interval for the primary timing loop is also used to calculate the change in robot angle during the last loop interval (**4 milliseconds**).  The gyro only determines the *rate* of change in the angle.  The time interval is used to determine the change in the angle.
+- The interrupt routine that drives the motors executes every **20 microseconds**.  The stepper motor drive 
+period is comprised of one interrupt period executing a motor step followed by several non-stepping interrupt periods.
 
 #### Battery Voltage Monitoring
 The battery voltage is being monitored on pin A0, an analog input.  The nominal voltage for a 3S LiPo battery is +11.1 V, a maximum voltage of +12.6 V, and the minimum operating voltage is 9.9 V.  There is a diode in the battery circuit to prevent hooking the battery up with the wrong polarity.  The voltage drop across the diode is approximately 0.85 V.  Hence the remaining maximum voltage is +11.75 V and the minimum voltage would be +9.05 V.  Unfortunately the Arduino can only measure voltages between 0 V and 5 V.  Two resistors can be used to create a voltage divider to reduce the voltage to no greater than +5V.  The maximum voltage needs to be divided by at least (+11.75 V)/(+5 V) = 2.35.  Using readily available resistor sizes, a voltage divider can be made from 33K ohm and 21.5K ohm resistors, for a divider of (33K + 21.5K)/21.5 = 2.535.  Now the maximum voltage would be +11.75 V/2.535 = +4.64 V.

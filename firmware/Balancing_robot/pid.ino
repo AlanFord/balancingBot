@@ -1,3 +1,4 @@
+
 float pid_calculator(bool reset, float pid_output, float pid_setpoint, float angle_gyro, float self_balance_pid_setpoint) {
   float pid_error_temp;
   static float pid_i_mem = 0;
@@ -18,12 +19,12 @@ float pid_calculator(bool reset, float pid_output, float pid_setpoint, float ang
     if (pid_output > 10 || pid_output < -10)pid_error_temp += pid_output * 0.015 ;
 
     pid_i_mem += pid_i_gain * pid_error_temp;                                 //Calculate the I-controller value and add it to the pid_i_mem variable
-    if (pid_i_mem > 400)pid_i_mem = 400;                                      //Limit the I-controller to the maximum controller output
-    else if (pid_i_mem < -400)pid_i_mem = -400;
+    //if (pid_i_mem > 400)pid_i_mem = 400;                                      //Limit the I-controller to the maximum controller output
+    //else if (pid_i_mem < -400)pid_i_mem = -400;
     //Calculate the PID output value
     pid_output = pid_p_gain * pid_error_temp + pid_i_mem + pid_d_gain * (pid_error_temp - pid_last_d_error);
-    if (pid_output > 400)pid_output = 400;                                    //Limit the PI-controller to the maximum controller output
-    else if (pid_output < -400)pid_output = -400;
+    //if (pid_output > 400)pid_output = 400;                                    //Limit the PI-controller to the maximum controller output
+    //else if (pid_output < -400)pid_output = -400;
 
     pid_last_d_error = pid_error_temp;                                        //Store the error for the next loop
 
@@ -65,26 +66,48 @@ void direction_control(float pid_output, byte received_byte, control_params &con
   }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////
+// convert the pid speed value to a pulse interval
+// if pid speed value is 0, set the pulse interval to 0 (special value for ISR)
+// if |pulse interval| > MAX_PULSE_INTERVAL, limit pulse interval to +/- MAX_PULSE_INTERVAL
+// if |pulse interval| < MIN_PULSE_INTERVAL, limit pulse interval to +/- MIN_PULSE_INTERVAL
+
+/////////////////////////////////////////////////////////////////////////////////////////////
 void calculate_motor_pulse_interval(float pid_output_left, float pid_output_right) {
+  const int inverted_gain = 4000;
+  // const int MAX_PULSE_INTERVAL = INT_MAX-100;
+  const int MAX_PULSE_INTERVAL = 256;
+  const int MIN_PULSE_INTERVAL = 9;
   int left_motor, right_motor;
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //Motor pulse calculations
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //To compensate for the non-linear behaviour of the stepper motors the folowing calculations are needed to get a linear speed behaviour.
-  if (pid_output_left > 0)pid_output_left = 405 - (1 / (pid_output_left + 9)) * 5500;
-  else if (pid_output_left < 0)pid_output_left = -405 - (1 / (pid_output_left - 9)) * 5500;
+  float temp_value;
 
-  if (pid_output_right > 0)pid_output_right = 405 - (1 / (pid_output_right + 9)) * 5500;
-  else if (pid_output_right < 0)pid_output_right = -405 - (1 / (pid_output_right - 9)) * 5500;
+  if (pid_output_left == 0)
+    left_motor = 0;
+  else {
+    temp_value = (1./pid_output_left) * inverted_gain;
+    if (temp_value < -MAX_PULSE_INTERVAL)
+      left_motor = -MAX_PULSE_INTERVAL;
+    else if (temp_value > MAX_PULSE_INTERVAL)
+      left_motor = MAX_PULSE_INTERVAL;
+    else
+      left_motor = temp_value;
+    if (abs(left_motor)<MIN_PULSE_INTERVAL)
+      left_motor =  ((left_motor > 0) - (left_motor < 0)) * MIN_PULSE_INTERVAL;
+  }
 
-  //Calculate the needed pulse time for the left and right stepper motor controllers
-  if (pid_output_left > 0)left_motor = 400 - pid_output_left;
-  else if (pid_output_left < 0)left_motor = -400 - pid_output_left;
-  else left_motor = 0;
-
-  if (pid_output_right > 0)right_motor = 400 - pid_output_right;
-  else if (pid_output_right < 0)right_motor = -400 - pid_output_right;
-  else right_motor = 0;
+  if (pid_output_right == 0)
+    right_motor = 0;
+  else {
+    temp_value = (1./pid_output_right) * inverted_gain;
+    if (temp_value < -MAX_PULSE_INTERVAL) 
+      right_motor = -MAX_PULSE_INTERVAL;
+    else if (temp_value > MAX_PULSE_INTERVAL)
+      right_motor = MAX_PULSE_INTERVAL;
+    else
+      right_motor = temp_value;
+    if (abs(right_motor)<MIN_PULSE_INTERVAL)
+      right_motor =  ((right_motor > 0) - (right_motor < 0)) * MIN_PULSE_INTERVAL;
+  }
 
   //Copy the pulse time to the throttle variables so the interrupt subroutine can use them
   noInterrupts();

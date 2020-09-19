@@ -362,7 +362,7 @@ If, during operation, the red LED turns on, the motors will de-energize because 
 
 
 <!-- Images -->
-[nunchuck-connector]:   ./docs/connector.jpeg =250x      "Nunchuck connector wiring"
+[nunchuck-connector]:   ./docs/connector.jpeg      "Nunchuck connector wiring"
 [A4988]:                ./docs/basic.png           "A4988 diagram"
 [A4988-wiring]:         ./docs/a4988.jpeg          "A4988 wiring diagram"
 [power-supply]:         ./docs/power-supply.jpeg   "Power supply diagram"

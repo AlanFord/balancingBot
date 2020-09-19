@@ -18,6 +18,7 @@
 		- [The Blinky Lights](#the-blinky-lights)
 		- [The Brains Behind it All](#the-brains-behind-it-all)
 	- [Software](#software)
+		- [Function List](#function-list)
 		- [Timing Overview](#timing-overview)
 		- [Battery Voltage Monitoring](#battery-voltage-monitoring)
 		- [Attitude Monitoring](#attitude-monitoring)
@@ -227,6 +228,29 @@ Integrating the robot parts is the job of the Arduino Pro Mini.  The Arduino Pro
 ### Software
 The Arduino provides several functions, namely attitude monitoring, motor control, communications with the remote, and battery voltage monitoring.  These will be described in the following sections.  As an introduction though, it should be clear that the Arduino separates work into two categories – setup and loop.  Work performed in the setup occurs only once after power-up.  Work performed in the loop is repeated until the robot is powered down.  Some of the robot functions are performed in the setup and some are controlled by the loop.
 
+#### Function List
+- Balancing_robot.ino
+  	- void setup(), the Arduino setup routine
+	- void loop(), the main Arduino control loop
+- misc.ino
+	- void initialize_i2c(), initialize the i2c bus to communicate with the remote
+	- void initialize_timer(), initialize the timer used with the interrupt service
+	- bool battery_voltage_is_low(), determine if the battery voltage is too low
+- gyro.ino
+	- void initialize_gyro(), initialize the gyro/accelerometer
+	- void calibrate_gyro(), initial gyro calibration
+	- void get_gyro_angle(), determine the gyro's estimate of the vertical angle
+	- float get_accelerometer_angle(), determine the accelerometer's estimate of the vertical angle
+- radio.ino
+	- void initialize_radio(), initialize the RF24 radio transceiver
+	- byte get_radio_data(), get a byte of data from the remote control
+- pid.ino
+	- float pid_calculator(), determine the pid feedback value
+	- void direction_control(), add user direction signal to pid feedback value
+	- void calculate_motor_pulse_interval(), conver pid result to motor period
+- isr.ino
+	- ISR(), drive the stepper motor based on requested motor period
+
 #### Timing Overview
 The various processes that make up the control software work on a number of timing intervals.
 
@@ -338,7 +362,7 @@ If, during operation, the red LED turns on, the motors will de-energize because 
 
 
 <!-- Images -->
-[nunchuck-connector]:   ./docs/connector.jpeg      "Nunchuck connector wiring"
+[nunchuck-connector]:   ./docs/connector.jpeg =250x      "Nunchuck connector wiring"
 [A4988]:                ./docs/basic.png           "A4988 diagram"
 [A4988-wiring]:         ./docs/a4988.jpeg          "A4988 wiring diagram"
 [power-supply]:         ./docs/power-supply.jpeg   "Power supply diagram"
